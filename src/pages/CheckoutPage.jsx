@@ -1,7 +1,7 @@
 // CheckoutPage — with delivery method + payment selector
 import { useState, useEffect } from "react";
 
-const API = "http://hamedo-back-end-production-63a0.up.railway.app/api";
+const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
 
 const GOVERNORATES = [
   "Cairo","Alexandria","Giza","Qalyubia","Port Said","Suez",
