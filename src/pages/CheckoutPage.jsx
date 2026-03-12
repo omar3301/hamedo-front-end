@@ -128,6 +128,17 @@ export default function CheckoutPage({ items, onBack, onDone }) {
   // ── Form ─────────────────────────────────────────────────────────
   return (
     <div className="co-page-grid container" style={{ paddingTop:28,paddingBottom:80 }}>
+      <style>{`
+        .co-pay-strip { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .co-pay-opt { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); }
+        .co-pay-icon { font-size:1.3rem; flex-shrink:0; }
+        .co-pay-name { font-size:.88rem; font-weight:700; color:#F2F2F2; }
+        .co-pay-sub { font-size:.72rem; color:rgba(255,255,255,0.35); margin-top:2px; }
+        .co-pay-on { border-color:rgba(34,197,94,0.35); background:rgba(34,197,94,0.05); }
+        .co-pay-badge { margin-left:auto; font-size:.7rem; font-weight:800; letter-spacing:.06em; color:#22C55E; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25); border-radius:6px; padding:3px 9px; white-space:nowrap; flex-shrink:0; }
+        .co-pay-off { opacity:0.45; filter:grayscale(0.4); }
+        .co-pay-badge-soon { margin-left:auto; font-size:.7rem; font-weight:700; letter-spacing:.06em; color:rgba(255,255,255,0.4); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:3px 9px; white-space:nowrap; flex-shrink:0; }
+      `}</style>
       <div className="co-left">
 
         {/* ── STEP 1: Delivery method + address ── */}
@@ -166,6 +177,7 @@ export default function CheckoutPage({ items, onBack, onDone }) {
               </button>
             </div>
 
+            <div className="co-section-title" style={{marginTop:28}}>Payment Method</div>
             {/* Payment info strip */}
             <div className="co-pay-strip">
               <div className="co-pay-opt co-pay-on">
@@ -327,9 +339,6 @@ export default function CheckoutPage({ items, onBack, onDone }) {
             <span>Total</span>
             <span style={{ color:"#F4C430" }}>{total.toLocaleString()} EGP</span>
           </div>
-        </div>
-        <div style={{ marginTop:18,background:"rgba(244,196,48,.08)",border:"1px solid rgba(244,196,48,.18)",borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:8,fontSize:".8rem",color:"rgba(255,255,255,.55)" }}>
-          💵 <span><strong style={{ color:"#F4C430" }}>Cash on Delivery</strong> — pay on arrival</span>
         </div>
       </div>
     </div>
