@@ -182,7 +182,7 @@ export default function App() {
       <div className="page-body page-anim">
         <Ticker />
         <Hero onShop={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})} />
-        <ProductGrid products={products} filter={filter} setFilter={handleSetFilter} onProductClick={handleOpenProduct} shopRef={shopRef} />
+        <ProductGrid products={products} productsLoaded={productsLoaded} filter={filter} setFilter={handleSetFilter} onProductClick={handleOpenProduct} shopRef={shopRef} />
         <StoreInfo />
         <Footer />
       </div>

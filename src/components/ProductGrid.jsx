@@ -23,7 +23,25 @@ const ISearch = () => (
   </svg>
 );
 
-export default function ProductGrid({ products=[], filter, setFilter, onProductClick, shopRef }) {
+// ── Skeleton card ─────────────────────────────────────────────────
+const SkeletonCard = () => (
+  <div className="pcard" style={{ pointerEvents:"none" }}>
+    <div className="pcard-img">
+      <div className="skel skel-img" />
+    </div>
+    <div className="pcard-info">
+      <div className="skel skel-line" style={{ width:"40%", height:10, marginBottom:8 }} />
+      <div className="skel skel-line" style={{ width:"85%", height:14, marginBottom:6 }} />
+      <div className="skel skel-line" style={{ width:"55%", height:10, marginBottom:16 }} />
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div className="skel skel-line" style={{ width:"35%", height:16 }} />
+        <div className="skel skel-circle" />
+      </div>
+    </div>
+  </div>
+);
+
+export default function ProductGrid({ products=[], productsLoaded=false, filter, setFilter, onProductClick, shopRef }) {
   const [search,  setSearch]  = useState("");
   const [brand,   setBrand]   = useState("all");
   const [sort,    setSort]    = useState("default");
@@ -147,17 +165,26 @@ export default function ProductGrid({ products=[], filter, setFilter, onProductC
       )}
 
       {/* ── Grid ── */}
-      <div className={"pgrid"+(fading?" switching":"")}>
-        {visible.map(p => (
-          <ProductCard key={p.id||p._id} product={p} onClick={onProductClick} />
-        ))}
-        {visible.length===0 && (
-          <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"60px 0",
-                        color:"rgba(255,255,255,.22)", fontSize:".9rem" }}>
-            {search ? `No results for "${search}"` : "No products in this category yet."}
-          </div>
-        )}
-      </div>
+      {!productsLoaded ? (
+        // Skeleton placeholders while API loads
+        <div className="pgrid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : (
+        <div className={"pgrid"+(fading?" switching":"")}>
+          {visible.map(p => (
+            <ProductCard key={p.id||p._id} product={p} onClick={onProductClick} />
+          ))}
+          {visible.length===0 && (
+            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"60px 0",
+                          color:"rgba(255,255,255,.22)", fontSize:".9rem" }}>
+              {search ? `No results for "${search}"` : "No products in this category yet."}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
