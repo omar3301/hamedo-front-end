@@ -1,7 +1,7 @@
 // CheckoutPage — with delivery method + payment selector
 import { useState, useEffect } from "react";
 
-const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
+const API = "http://localhost:4000/api";
 
 const GOVERNORATES = [
   "Cairo","Alexandria","Giza","Qalyubia","Port Said","Suez",
@@ -66,6 +66,7 @@ export default function CheckoutPage({ items, onBack, onDone }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          deliveryMethod: delivery,
           customer: { firstName: form.firstName, lastName: form.lastName, phone: "+20" + form.phone.replace(/^0/, "") },
           delivery: delivery === "pickup"
             ? { address: "Store Pickup — Khub, Shebin El Kom, Menofia", apt: "", city: "Shebin El Kom", governorate: "Monufia" }
