@@ -27,7 +27,9 @@ export default function Hero({ onShop, onFilter }) {
           <div className="hero-cats fu d4">
             {["Rackets","Shoes","Accessories","Clothes"].map(cat => (
             <button key={cat} className="hero-cat-btn"
-              onClick={() => onFilter(cat.toLowerCase())}>
+              onClick={() => {
+  onFilter(cat.toLowerCase());
+  setTimeout(() => onShop(), 100);}}>
               {cat}
             </button>
           ))}
