@@ -12,7 +12,7 @@ import StoreInfo     from "./components/StoreInfo";
 import Footer        from "./components/Footer";
 import { PRODUCTS }  from "./data/products";
 
-const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
+const API = "http://localhost:4000/api";
 
 const normalizeProduct = (p) => ({
   ...p,
@@ -181,7 +181,10 @@ export default function App() {
     <>{navbar}
       <div className="page-body page-anim">
         <Ticker />
-        <Hero onShop={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})} onFilter={handleSetFilter} />
+        <Hero
+          onShop={() => shopRef.current?.scrollIntoView({ behavior:"smooth", block:"start" })}
+          onFilter={handleSetFilter}
+        />
         <ProductGrid products={products} productsLoaded={productsLoaded} filter={filter} setFilter={handleSetFilter} onProductClick={handleOpenProduct} shopRef={shopRef} />
         <StoreInfo />
         <Footer />

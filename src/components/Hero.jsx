@@ -5,7 +5,17 @@ const HERO_IMGS = [
   "https://instagram.fcai20-4.fna.fbcdn.net/v/t51.82787-15/641868119_17856385236669926_4923574850090693181_n.jpg?stp=dst-jpegr_e35_s320x320_tt6&_nc_cat=107&ig_cache_key=Mzg0NjIzMzQzODExNDI5NjA1Mg%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTkyMC5oZHIuQzMifQ%3D%3D&_nc_ohc=a6I1RC4w1uwQ7kNvwFIDT_J&_nc_oc=AdmA4Y34jljRAZsMdNhx63TD1ZZmYb8M3Xc6PWV94fXp8KEaH1PkifZcFzjmjhsSqi0&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=instagram.fcai20-4.fna&_nc_gid=IFL5wEupGTy03mM0ceGQvw&_nc_ss=8&oh=00_AfwEZ26urvr48GzxDPlaAGK4zjbOneLRJ8m24pSOj2M5VA&oe=69B4D1C3",
 ];
 
+// onFilter(category) → sets filter
+// onShop()          → scrolls to grid
 export default function Hero({ onShop, onFilter }) {
+
+  const handleCat = (cat) => {
+    // 1. set the filter
+    onFilter(cat.toLowerCase());
+    // 2. scroll to grid — wait a tick so the filter state updates first
+    // Use 300ms so animation starts before scroll on mobile too
+    setTimeout(() => onShop(), 300);
+  };
 
   return (
     <section className="hero">
@@ -24,16 +34,16 @@ export default function Hero({ onShop, onFilter }) {
             rackets, shoes & circuit kits.
             Delivered across Monufia.
           </p>
+
+          {/* Category pills — filter + scroll */}
           <div className="hero-cats fu d4">
             {["Rackets","Shoes","Accessories","Clothes"].map(cat => (
-            <button key={cat} className="hero-cat-btn"
-              onClick={() => {
-  onFilter(cat.toLowerCase());
-  setTimeout(() => onShop(), 100);}}>
-              {cat}
-            </button>
-          ))}
+              <button key={cat} className="hero-cat-btn" onClick={() => handleCat(cat)}>
+                {cat}
+              </button>
+            ))}
           </div>
+
           <div className="hero-btns fu d5">
             <button className="btn-y" onClick={onShop}>Shop Now</button>
             <button className="btn-g" onClick={() => window.open("https://www.instagram.com/hamedo.sport/","_blank")}>
@@ -41,6 +51,7 @@ export default function Hero({ onShop, onFilter }) {
             </button>
           </div>
         </div>
+
         <div className="hero-photos">
           <div className="hcard fu d3" style={{ width:"57%", height:320, top:0, right:0 }}>
             <img src={HERO_IMGS[0]} alt="" />
