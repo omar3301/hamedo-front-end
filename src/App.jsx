@@ -12,7 +12,7 @@ import StoreInfo     from "./components/StoreInfo";
 import Footer        from "./components/Footer";
 import { PRODUCTS }  from "./data/products";
 
-const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
+const API = "http://localhost:4000/api";
 
 const normalizeProduct = (p) => ({
   ...p,
@@ -53,20 +53,43 @@ export default function App() {
   const [products,   setProducts]   = useState(PRODUCTS);
   const shopRef = useRef();
 
+  const [productsLoaded, setProductsLoaded] = useState(false);
+  const pendingRoute = useRef(null);
+
   useEffect(() => {
     fetch(`${API}/products`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => { if (data?.length) setProducts(data.map(normalizeProduct)); })
-      .catch(()=>{});
+      .then(data => {
+        if (data?.length) setProducts(data.map(normalizeProduct));
+        setProductsLoaded(true);
+      })
+      .catch(()=>{ setProductsLoaded(true); }); // even on fail, unblock
   }, []);
 
-  // Read URL on first load
+  // Read URL on first load — save product routes until products are loaded
   useEffect(() => {
     const hash  = getHash();
     const route = parseRoute(hash);
     replaceHash(hash);
-    if (route.phase !== "select") { setPhase(route.phase); setFilter(route.filter); }
+    if (route.phase === "product") {
+      // Can't resolve yet — save and handle after products load
+      pendingRoute.current = route;
+      setPhase("home"); // show home as fallback while loading
+    } else if (route.phase !== "select") {
+      setPhase(route.phase);
+      setFilter(route.filter);
+    }
   }, []);
+
+  // Once products load, resolve any pending product route
+  useEffect(() => {
+    if (!productsLoaded || !pendingRoute.current) return;
+    const route = pendingRoute.current;
+    pendingRoute.current = null;
+    const prod = products.find(p => p.id===route.productId || p.slug===route.productId);
+    if (prod) { setActiveProd(prod); setPhase("product"); }
+    else       { setPhase("home"); }
+  }, [productsLoaded, products]);
 
   // Handle Android / iPhone back button via popstate
   useEffect(() => {
