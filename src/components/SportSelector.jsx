@@ -25,8 +25,8 @@ export default function SportSelector({ onSelect }) {
 
       <div className="sp-inner fi">
 
-        {/* Logo row */}
-        <div className="sp-logo-row">
+        {/* Logo row — extra top padding on mobile to clear Safari UI chrome */}
+        <div className="sp-logo-row" style={{ paddingTop:"env(safe-area-inset-top, 20px)", marginTop: 24 }}>
           <Logo size={30} />
         </div>
 
