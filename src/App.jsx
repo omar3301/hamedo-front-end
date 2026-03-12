@@ -12,7 +12,7 @@ import StoreInfo     from "./components/StoreInfo";
 import Footer        from "./components/Footer";
 import { PRODUCTS }  from "./data/products";
 
-const API = "hamedo-back-end-production-63a0.up.railway.app/api";
+const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
 
 const normalizeProduct = (p) => ({
   ...p,
