@@ -17,8 +17,8 @@ function LazyImg({ src, alt }) {
       {!loaded && <div className="img-shimmer" />}
       {inView && (
         <img src={src} alt={alt}
-          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center",
-                   display:"block", opacity: loaded?1:0, transition:"opacity .5s ease" }}
+          style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center",
+                   padding:"12px", display:"block", opacity: loaded?1:0, transition:"opacity .5s ease" }}
           onLoad={() => setLoaded(true)}
           onError={e => { e.target.style.opacity=".08"; }}
         />
