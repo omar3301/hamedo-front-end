@@ -5,7 +5,8 @@ const HERO_IMGS = [
   "https://instagram.fcai20-4.fna.fbcdn.net/v/t51.82787-15/641868119_17856385236669926_4923574850090693181_n.jpg?stp=dst-jpegr_e35_s320x320_tt6&_nc_cat=107&ig_cache_key=Mzg0NjIzMzQzODExNDI5NjA1Mg%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTkyMC5oZHIuQzMifQ%3D%3D&_nc_ohc=a6I1RC4w1uwQ7kNvwFIDT_J&_nc_oc=AdmA4Y34jljRAZsMdNhx63TD1ZZmYb8M3Xc6PWV94fXp8KEaH1PkifZcFzjmjhsSqi0&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=instagram.fcai20-4.fna&_nc_gid=IFL5wEupGTy03mM0ceGQvw&_nc_ss=8&oh=00_AfwEZ26urvr48GzxDPlaAGK4zjbOneLRJ8m24pSOj2M5VA&oe=69B4D1C3",
 ];
 
-export default function Hero({ onShop }) {
+export default function Hero({ onShop, onFilter }) {
+
   return (
     <section className="hero">
       <div className="hero-grid" />
@@ -14,34 +15,38 @@ export default function Hero({ onShop }) {
         <div>
           <div className="hero-eye fu d1">Monufia · Egypt · Official Padel Gear</div>
           <h1 className="hero-h1 fu d2">
-            Premium<br />
-            <span style={{ color: "#F4C430" }}>Padel</span><br />
-            Equipment
+            Monufia's<br />
+            <span style={{ color:"#F4C430" }}>Official</span><br />
+            Padel Store
           </h1>
           <p className="hero-p fu d3">
-            Rackets, shoes, accessories & official circuit kits —
-            BullPadel, NOX and more. Delivered in Monufia.
+            Official gear from BullPadel, NOX & Siux —
+            rackets, shoes & circuit kits.
+            Delivered across Monufia.
           </p>
           <div className="hero-cats fu d4">
-            {["Rackets", "Shoes", "Accessories", "Clothes"].map(cat => (
-              <button key={cat} className="hero-cat-btn" onClick={onShop}>{cat}</button>
-            ))}
+            {["Rackets","Shoes","Accessories","Clothes"].map(cat => (
+            <button key={cat} className="hero-cat-btn"
+              onClick={() => onFilter(cat.toLowerCase())}>
+              {cat}
+            </button>
+          ))}
           </div>
           <div className="hero-btns fu d5">
             <button className="btn-y" onClick={onShop}>Shop Now</button>
-            <button className="btn-g" onClick={() => window.open("https://www.instagram.com/hamedo.sport/", "_blank")}>
+            <button className="btn-g" onClick={() => window.open("https://www.instagram.com/hamedo.sport/","_blank")}>
               Instagram ↗
             </button>
           </div>
         </div>
         <div className="hero-photos">
-          <div className="hcard fu d3" style={{ width: "57%", height: 320, top: 0, right: 0 }}>
+          <div className="hcard fu d3" style={{ width:"57%", height:320, top:0, right:0 }}>
             <img src={HERO_IMGS[0]} alt="" />
           </div>
-          <div className="hcard fu d4" style={{ width: "52%", height: 270, bottom: 0, left: 0 }}>
+          <div className="hcard fu d4" style={{ width:"52%", height:270, bottom:0, left:0 }}>
             <img src={HERO_IMGS[1]} alt="" />
           </div>
-          <div className="hcard fu d5" style={{ width: "44%", height: 210, bottom: 50, right: "5%" }}>
+          <div className="hcard fu d5" style={{ width:"44%", height:210, bottom:50, right:"5%" }}>
             <img src={HERO_IMGS[2]} alt="" />
           </div>
         </div>

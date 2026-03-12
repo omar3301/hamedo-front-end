@@ -181,7 +181,7 @@ export default function App() {
     <>{navbar}
       <div className="page-body page-anim">
         <Ticker />
-        <Hero onShop={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})} />
+        <Hero onShop={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})} onFilter={handleSetFilter} />
         <ProductGrid products={products} productsLoaded={productsLoaded} filter={filter} setFilter={handleSetFilter} onProductClick={handleOpenProduct} shopRef={shopRef} />
         <StoreInfo />
         <Footer />
