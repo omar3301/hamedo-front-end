@@ -23,8 +23,35 @@ export default function Footer() {
           <IInsta />@hamedo.sport
         </a>
         <div style={{ fontSize:".68rem", color:"rgba(255,255,255,.18)" }}>
-          Cairo, Egypt · 💵 Cash on Delivery
+          Shebin El Kom, Egypt · 💵 Cash on Delivery
         </div>
+      </div>
+
+      {/* ── Built by ── */}
+      <div style={{
+        borderTop: "1px solid rgba(255,255,255,.04)",
+        padding: "12px 24px",
+        textAlign: "center",
+      }}>
+        <span style={{
+          fontSize: ".62rem",
+          color: "rgba(255,255,255,.15)",
+          fontWeight: 500,
+          letterSpacing: ".06em",
+        }}>
+          ⚡ Built by{" "}
+          <span style={{
+            color: "rgba(255,255,255,.28)",
+            fontWeight: 700,
+            transition: "color .2s",
+            cursor: "default",
+          }}
+            onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.28)"}
+          >
+            Omar Abomosslam
+          </span>
+        </span>
       </div>
     </div>
   );
