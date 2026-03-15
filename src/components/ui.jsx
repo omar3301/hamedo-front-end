@@ -66,7 +66,8 @@ export function Logo({ size = 30 }) {
       }}>HS</div>
       <span style={{
         fontFamily:"'Syne',sans-serif", fontWeight:800,
-        fontSize:size*.48+"px", letterSpacing:"-.02em"
+        fontSize:size*.48+"px", letterSpacing:"-.02em",
+        color:"#F2F2F2"
       }}>
         Hamedo<span style={{ color:"#F4C430" }}>Sport</span>
       </span>

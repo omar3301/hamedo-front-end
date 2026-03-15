@@ -21,7 +21,7 @@ export default function CartDrawer({ open, items, onClose, onRemove, onCheckout 
         {/* Items */}
         <div style={{ flex:1, overflowY:"auto", padding:"14px 20px" }}>
           {items.length === 0 ? (
-            <div style={{ textAlign:"center", color:"rgba(255,255,255,.22)", padding:"60px 0", fontSize:".88rem" }}>
+            <div style={{ textAlign:"center", color:"rgba(255,255,255,.55)", padding:"60px 0", fontSize:".88rem" }}>
               Your cart is empty
             </div>
           ) : (
@@ -39,7 +39,7 @@ export default function CartDrawer({ open, items, onClose, onRemove, onCheckout 
                 {/* Info */}
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:600, fontSize:".84rem", lineHeight:1.3 }}>{it.name}</div>
-                  <div style={{ fontSize:".7rem", color:"rgba(255,255,255,.32)" }}>
+                  <div style={{ fontSize:".7rem", color:"rgba(255,255,255,.55)" }}>
                     {it.color} · Size {it.size} · Qty {it.qty}
                   </div>
                   <div style={{ fontWeight:700, fontSize:".9rem", marginTop:3 }}>
@@ -60,11 +60,11 @@ export default function CartDrawer({ open, items, onClose, onRemove, onCheckout 
         {/* Footer */}
         <div style={{ padding:"18px 20px", borderTop:"1px solid rgba(255,255,255,.07)" }}>
           {/* COD badge */}
-          <div style={{ fontSize:".72rem", color:"rgba(255,255,255,.35)", textAlign:"center", marginBottom:12 }}>
+          <div style={{ fontSize:".72rem", color:"rgba(255,255,255,.55)", textAlign:"center", marginBottom:12 }}>
             💵 Cash on Delivery only
           </div>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
-            <span style={{ color:"rgba(255,255,255,.42)" }}>Total</span>
+            <span style={{ color:"rgba(255,255,255,.6)" }}>Total</span>
             <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:"1.15rem" }}>
               {total.toLocaleString()} EGP
             </span>

@@ -779,7 +779,7 @@ body {
 .si-right-panel { background: #0f0f0f; padding: 36px; display: flex; flex-direction: column; }
 .si-block-tag {
   font-size: .58rem; font-weight: 800; letter-spacing: .18em;
-  color: rgba(255,255,255,.25); text-transform: uppercase; margin-bottom: 12px;
+  color: rgba(255,255,255,.55); text-transform: uppercase; margin-bottom: 12px;
 }
 .si-hours-block { margin-bottom: 26px; }
 .si-hours-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -789,19 +789,19 @@ body {
   box-shadow: 0 0 8px #22C55E; animation: pulse 2s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
-.si-hours-time { font-size: .72rem; color: rgba(255,255,255,.3); }
+.si-hours-time { font-size: .72rem; color: rgba(255,255,255,.55); }
 .si-hours-big {
   font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
   letter-spacing: -.02em; margin-bottom: 8px;
 }
-.si-hours-note { font-size: .78rem; color: rgba(255,255,255,.3); line-height: 1.6; }
+.si-hours-note { font-size: .78rem; color: rgba(255,255,255,.55); line-height: 1.6; }
 .si-divider { height: 1px; background: rgba(255,255,255,.07); margin-bottom: 22px; }
 .si-help-block { flex: 1; }
 .si-help-title {
   font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800;
   line-height: 1.15; margin-bottom: 10px; letter-spacing: -.02em;
 }
-.si-help-desc { font-size: .8rem; color: rgba(255,255,255,.35); line-height: 1.7; margin-bottom: 20px; }
+.si-help-desc { font-size: .8rem; color: rgba(255,255,255,.6); line-height: 1.7; margin-bottom: 20px; }
 .si-wa-btn {
   display: inline-flex; align-items: center; gap: 9px;
   background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.25);
@@ -819,7 +819,7 @@ body {
 .si-trust-card:hover { border-color: rgba(244,196,48,.2); transform: translateY(-2px); }
 .si-trust-icon { font-size: 1.3rem; color: #F4C430; margin-bottom: 12px; display: block; }
 .si-trust-title { font-family:'Syne',sans-serif; font-weight: 800; font-size: .95rem; margin-bottom: 6px; }
-.si-trust-desc { font-size: .74rem; color: rgba(255,255,255,.35); line-height: 1.6; }
+.si-trust-desc { font-size: .74rem; color: rgba(255,255,255,.6); line-height: 1.6; }
 
 /* ── CHECKOUT DELIVERY/PAYMENT ── */
 .co-del-pick { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }

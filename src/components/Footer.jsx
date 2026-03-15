@@ -1,6 +1,3 @@
-// ─────────────────────────────────────────────
-//  Footer
-// ─────────────────────────────────────────────
 import { Logo, IInsta } from "./ui";
 
 export default function Footer() {
@@ -12,42 +9,43 @@ export default function Footer() {
           href="https://www.instagram.com/hamedo.sport/"
           target="_blank"
           rel="noreferrer"
+          aria-label="HamedoSport on Instagram"
           style={{
-            display:"flex", alignItems:"center", gap:6,
-            color:"rgba(255,255,255,.35)", fontSize:".8rem",
-            textDecoration:"none", fontWeight:600, transition:"color .2s",
+            display: "flex", alignItems: "center", gap: 6,
+            color: "rgba(255,255,255,.6)",
+            fontSize: ".8rem", textDecoration: "none",
+            fontWeight: 600, transition: "color .2s",
           }}
           onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
-          onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.35)"}
+          onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.6)"}
         >
-          <IInsta />@hamedo.sport
+          <IInsta aria-hidden="true" />@hamedo.sport
         </a>
-        <div style={{ fontSize:".68rem", color:"rgba(255,255,255,.18)" }}>
+        <div style={{ fontSize: ".68rem", color: "rgba(255,255,255,.5)" }}>
           Shebin El Kom, Egypt · 💵 Cash on Delivery
         </div>
       </div>
 
-      {/* ── Built by ── */}
       <div style={{
-        borderTop: "1px solid rgba(255,255,255,.04)",
+        borderTop: "1px solid rgba(255,255,255,.06)",
         padding: "12px 24px",
         textAlign: "center",
       }}>
         <span style={{
           fontSize: ".62rem",
-          color: "rgba(255,255,255,.15)",
+          color: "rgba(255,255,255,.45)",
           fontWeight: 500,
           letterSpacing: ".06em",
         }}>
           ⚡ Built by{" "}
           <span style={{
-            color: "rgba(255,255,255,.28)",
+            color: "rgba(255,255,255,.6)",
             fontWeight: 700,
             transition: "color .2s",
             cursor: "default",
           }}
             onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
-            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.28)"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.6)"}
           >
             Omar Abomosslam
           </span>
