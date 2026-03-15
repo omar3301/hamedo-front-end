@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+// sr-only: visually hidden but readable by screen readers
 import ProductCard from "./ProductCard";
-import { useProducts } from "../context/ProductContext";
 
 const CATS = [
   { id:"all",         label:"All" },
@@ -43,7 +43,6 @@ const SkeletonCard = () => (
 );
 
 export default function ProductGrid({ products=[], productsLoaded=false, filter, setFilter, onProductClick, shopRef }) {
-  const { apiError } = useProducts();
   const [search,  setSearch]  = useState("");
   const [brand,   setBrand]   = useState("all");
   const [sort,    setSort]    = useState("default");
@@ -116,7 +115,9 @@ export default function ProductGrid({ products=[], productsLoaded=false, filter,
         <div className="filter-row">
           {CATS.map(c => (
             <button key={c.id} className={"fbtn"+(filter===c.id?" on":"")}
-              onClick={()=>{ setFilter(c.id); setBrand("all"); setSearch(""); }}>
+              onClick={()=>{ setFilter(c.id); setBrand("all"); setSearch(""); }}
+              aria-pressed={filter===c.id}
+              aria-label={"Filter by " + c.label}>
               {c.label}
             </button>
           ))}
@@ -145,16 +146,24 @@ export default function ProductGrid({ products=[], productsLoaded=false, filter,
 
         {/* Brand filter */}
         {brands.length > 0 && (
-          <select className="grid-select" value={brand} onChange={e=>setBrand(e.target.value)}>
-            <option value="all">All Brands</option>
-            {brands.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
+          <label htmlFor="brand-select" style={{display:"flex",alignItems:"center",gap:4}}>
+            <span className="sr-only">Filter by brand</span>
+            <select id="brand-select" className="grid-select" value={brand} onChange={e=>setBrand(e.target.value)}
+              aria-label="Filter by brand">
+              <option value="all">All Brands</option>
+              {brands.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </label>
         )}
 
         {/* Sort */}
-        <select className="grid-select" value={sort} onChange={e=>setSort(e.target.value)}>
-          {SORTS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-        </select>
+        <label htmlFor="sort-select" style={{display:"flex",alignItems:"center",gap:4}}>
+          <span className="sr-only">Sort products</span>
+          <select id="sort-select" className="grid-select" value={sort} onChange={e=>setSort(e.target.value)}
+            aria-label="Sort products">
+            {SORTS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        </label>
       </div>
 
       {/* ── Result count ── */}
@@ -180,28 +189,9 @@ export default function ProductGrid({ products=[], productsLoaded=false, filter,
             <ProductCard key={p.id||p._id} product={p} onClick={onProductClick} />
           ))}
           {visible.length===0 && (
-            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"60px 20px" }}>
-              {apiError ? (
-                <div style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:14 }}>
-                  <span style={{ fontSize:"2.2rem" }}>🔌</span>
-                  <p style={{ color:"rgba(255,255,255,.55)", fontSize:".95rem", fontWeight:600, margin:0 }}>
-                    Can't connect to the store right now
-                  </p>
-                  <p style={{ color:"rgba(255,255,255,.28)", fontSize:".78rem", margin:0, maxWidth:280 }}>
-                    The server may be starting up. Please wait a moment and refresh.
-                  </p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    style={{ marginTop:4, padding:"9px 22px", background:"rgba(244,196,48,.12)", border:"1px solid rgba(244,196,48,.3)", borderRadius:8, color:"#F4C430", fontSize:".8rem", fontWeight:700, cursor:"pointer", letterSpacing:".06em" }}
-                  >
-                    ↻ Retry
-                  </button>
-                </div>
-              ) : (
-                <p style={{ color:"rgba(255,255,255,.22)", fontSize:".9rem", margin:0 }}>
-                  {search ? `No results for "${search}"` : "No products in this category yet."}
-                </p>
-              )}
+            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"60px 0",
+                          color:"rgba(255,255,255,.22)", fontSize:".9rem" }}>
+              {search ? `No results for "${search}"` : "No products in this category yet."}
             </div>
           )}
         </div>

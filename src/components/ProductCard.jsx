@@ -1,5 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 
+
+// Auto-resize Cloudinary URLs to the exact display size (saves ~90% bandwidth)
+// Grid card image is 180x240 on mobile, 200x260 on desktop — use 240px as safe max
+function cdnResize(url, w = 240, h = 300) {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  // Insert transformation params before /v followed by version number
+  return url.replace(
+    /\/upload\/(v\d+\/)/,
+    `/upload/f_auto,q_auto,w_${w},h_${h},c_fill/$1`
+  );
+}
+
 function LazyImg({ src, alt }) {
   const [inView,  setInView]  = useState(false);
   const [loaded,  setLoaded]  = useState(false);
@@ -93,7 +105,7 @@ export default function ProductCard({ product: p, onClick }) {
       }}
     >
       <div className="pcard-img">
-        <LazyImg src={p.images?.[0]} alt={`${p.name}${p.color ? ` — ${p.color}` : ""}`} />
+        <LazyImg src={cdnResize(p.images?.[0])} alt={`${p.name}${p.color ? ` — ${p.color}` : ""}`} />
 
         {hasDiscount && (
           <div className="pcard-discount-badge" aria-label={`${discountPct}% off`}>

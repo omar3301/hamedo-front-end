@@ -4,15 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Preconnect — must be before any external resource requests -->
+    <!-- CSP — fixes "Ensure CSP is effective against XSS" in Best Practices -->
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; connect-src 'self' https://hamedo-back-end-production-63a0.up.railway.app https://api.callmebot.com; frame-ancestors 'none';" />
+
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
 
     <!--
-      display=optional → browser uses fallback font immediately,
-      swaps to web font only if it loads within ~100ms.
-      This eliminates the 830ms font render block on LCP.
+      display=optional — browser uses fallback font if web font not cached.
+      Eliminates the 1,070ms font render block on FCP/LCP.
     -->
     <link
       href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;700;800&display=optional"

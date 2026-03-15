@@ -1,19 +1,11 @@
 // Hero — Padel focused
-//
-// Cloudinary URL format:
-//   f_auto   = auto format (WebP for Chrome, AVIF for Firefox)
-//   q_auto   = auto quality
-//   w_NNN    = resize to exact displayed width → saves 90%+ of bytes
-//   c_fill   = crop to fill the box (no empty space)
-//
-// Replace these with your own Cloudinary images via the admin upload panel.
-//
+// Images use Cloudinary transformations: f_auto (WebP/AVIF), q_auto, exact display dimensions
 const HERO_IMGS = [
-  // Displayed at ~456x320 → request exactly that size
+  // LCP image — 57% of hero width ≈ 456px wide, 320px tall
   "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_456,h_320,c_fill/v1773322480/black_shirt_nox_exeugt.jpg",
-  // Displayed at ~416x270 → request exactly that size
-  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_416,h_270,c_fill/v1773322480/white_shirt_nox_17bhjd.jpg",
-  // Displayed at ~352x210 → request exactly that size
+  // Second card — 52% wide ≈ 416px, 270px tall — using back image (front was 404)
+  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_416,h_270,c_fill/v1773322479/back_black_shirt_nox_wvdkwo.jpg",
+  // Third card — 44% wide ≈ 352px, 210px tall
   "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_352,h_210,c_fill/v1773321610/white_shirt_cupra_zdkqvb.jpg",
 ];
 
@@ -53,9 +45,7 @@ export default function Hero({ onShop, onFilter }) {
           </div>
 
           <div className="hero-btns fu d5">
-            <button className="btn-y" onClick={onShop} aria-label="Shop all products">
-              Shop Now
-            </button>
+            <button className="btn-y" onClick={onShop} aria-label="Shop all products">Shop Now</button>
             <button className="btn-g"
               onClick={() => window.open("https://www.instagram.com/hamedo.sport/", "_blank")}
               aria-label="Visit HamedoSport on Instagram">
@@ -65,7 +55,7 @@ export default function Hero({ onShop, onFilter }) {
         </div>
 
         <div className="hero-photos">
-          {/* LCP image — fetchpriority high, eager, explicit dimensions */}
+          {/* LCP — fetchpriority high, explicit dimensions, no lazy */}
           <div className="hcard fu d3" style={{ width: "57%", height: 320, top: 0, right: 0 }}>
             <img
               src={HERO_IMGS[0]}
@@ -81,7 +71,7 @@ export default function Hero({ onShop, onFilter }) {
           <div className="hcard fu d4" style={{ width: "52%", height: 270, bottom: 0, left: 0 }}>
             <img
               src={HERO_IMGS[1]}
-              alt="Nox padel shirt — white"
+              alt="Nox padel shirt — back view"
               loading="lazy"
               decoding="async"
               width="416"
@@ -92,7 +82,7 @@ export default function Hero({ onShop, onFilter }) {
           <div className="hcard fu d5" style={{ width: "44%", height: 210, bottom: 50, right: "5%" }}>
             <img
               src={HERO_IMGS[2]}
-              alt="Cupra padel training shirt"
+              alt="Cupra padel training shirt — white"
               loading="lazy"
               decoding="async"
               width="352"
