@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import ProductCard from "./ProductCard";
+import { useProducts } from "../context/ProductContext";
 
 const CATS = [
   { id:"all",         label:"All" },
@@ -42,6 +43,7 @@ const SkeletonCard = () => (
 );
 
 export default function ProductGrid({ products=[], productsLoaded=false, filter, setFilter, onProductClick, shopRef }) {
+  const { apiError } = useProducts();
   const [search,  setSearch]  = useState("");
   const [brand,   setBrand]   = useState("all");
   const [sort,    setSort]    = useState("default");
@@ -178,9 +180,28 @@ export default function ProductGrid({ products=[], productsLoaded=false, filter,
             <ProductCard key={p.id||p._id} product={p} onClick={onProductClick} />
           ))}
           {visible.length===0 && (
-            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"60px 0",
-                          color:"rgba(255,255,255,.22)", fontSize:".9rem" }}>
-              {search ? `No results for "${search}"` : "No products in this category yet."}
+            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"60px 20px" }}>
+              {apiError ? (
+                <div style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:14 }}>
+                  <span style={{ fontSize:"2.2rem" }}>🔌</span>
+                  <p style={{ color:"rgba(255,255,255,.55)", fontSize:".95rem", fontWeight:600, margin:0 }}>
+                    Can't connect to the store right now
+                  </p>
+                  <p style={{ color:"rgba(255,255,255,.28)", fontSize:".78rem", margin:0, maxWidth:280 }}>
+                    The server may be starting up. Please wait a moment and refresh.
+                  </p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    style={{ marginTop:4, padding:"9px 22px", background:"rgba(244,196,48,.12)", border:"1px solid rgba(244,196,48,.3)", borderRadius:8, color:"#F4C430", fontSize:".8rem", fontWeight:700, cursor:"pointer", letterSpacing:".06em" }}
+                  >
+                    ↻ Retry
+                  </button>
+                </div>
+              ) : (
+                <p style={{ color:"rgba(255,255,255,.22)", fontSize:".9rem", margin:0 }}>
+                  {search ? `No results for "${search}"` : "No products in this category yet."}
+                </p>
+              )}
             </div>
           )}
         </div>

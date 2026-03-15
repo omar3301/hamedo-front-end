@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { PRODUCTS } from "../data/products";
 
-const API = import.meta.env.VITE_API_URL;
+const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
 
 const normalizeProduct = (p) => ({
   ...p,
@@ -18,26 +17,31 @@ const normalizeProduct = (p) => ({
 const ProductContext = createContext(null);
 
 export function ProductProvider({ children }) {
-  const [products,        setProducts]        = useState(PRODUCTS.map(normalizeProduct));
-  const [productsLoaded,  setProductsLoaded]  = useState(false);
+  const [products,       setProducts]       = useState([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
+  const [apiError,       setApiError]       = useState(false);
 
   useEffect(() => {
     fetch(`${API}/products`)
-      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then((data) => {
-        // API now returns { products, total, pages, page }
         const list = Array.isArray(data) ? data : data.products || [];
-        if (list.length) setProducts(list.map(normalizeProduct));
+        setProducts(list.map(normalizeProduct));
+        setApiError(false);
         setProductsLoaded(true);
       })
-      .catch(() => setProductsLoaded(true));
+      .catch(() => {
+        setProducts([]);
+        setApiError(true);
+        setProductsLoaded(true);
+      });
   }, []);
 
   const findProduct = (id) =>
     products.find((p) => p.id === id || p.slug === id || p._id === id);
 
   return (
-    <ProductContext.Provider value={{ products, productsLoaded, findProduct }}>
+    <ProductContext.Provider value={{ products, productsLoaded, apiError, findProduct }}>
       {children}
     </ProductContext.Provider>
   );
