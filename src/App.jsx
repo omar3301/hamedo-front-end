@@ -10,12 +10,13 @@ import CartDrawer    from "./components/CartDrawer";
 import CheckoutPage  from "./pages/CheckoutPage";
 import StoreInfo     from "./components/StoreInfo";
 import Footer        from "./components/Footer";
+import SEO           from "./components/SEO";
 import { useProducts } from "./context/ProductContext";
 import { useCart }     from "./context/CartContext";
 
-const API = import.meta.env.VITE_API_URL;
+const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
 
-// ── Hash routing helpers ──────────────────────────────────────────
+// ── Hash routing helpers ──────────────────────────────────────────────
 const getHash     = () => window.location.hash.replace("#", "") || "/";
 const setHash     = (p) => window.history.pushState({ path: p }, "", "#" + p);
 const replaceHash = (p) => window.history.replaceState({ path: p }, "", "#" + p);
@@ -36,7 +37,6 @@ const trackVisit = (page = "home") =>
     body: JSON.stringify({ page }),
   }).catch(() => {});
 
-// ─────────────────────────────────────────────────────────────────
 export default function App() {
   const { products, productsLoaded, findProduct } = useProducts();
   const { cart, cartOpen, addToCart, removeFromCart, clearCart, openCart, closeCart } = useCart();
@@ -47,13 +47,11 @@ export default function App() {
   const shopRef      = useRef();
   const pendingRoute = useRef(null);
 
-  // Read URL on first load
   useEffect(() => {
     const hash  = getHash();
     const route = parseRoute(hash);
     replaceHash(hash);
     if (route.phase === "product") {
-      // Defer until products are loaded
       pendingRoute.current = route;
       setPhase("home");
     } else if (route.phase !== "select") {
@@ -62,7 +60,6 @@ export default function App() {
     }
   }, []);
 
-  // Resolve pending product route once products load
   useEffect(() => {
     if (!productsLoaded || !pendingRoute.current) return;
     const route = pendingRoute.current;
@@ -72,7 +69,6 @@ export default function App() {
     else       { setPhase("home"); }
   }, [productsLoaded, products]);
 
-  // Handle Android / iOS back button
   useEffect(() => {
     const onPop = () => {
       const route = parseRoute(getHash());
@@ -91,81 +87,58 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, [products]);
 
-  // ── Navigation helpers ────────────────────────────────────────────
+  // ── Navigation ────────────────────────────────────────────────────
   const goHome = () => {
-    setHash("/shop");
-    setPhase("home");
-    setActiveProd(null);
-    setFilter("all");
-    window.scrollTo({ top: 0 });
+    setHash("/shop"); setPhase("home"); setActiveProd(null);
+    setFilter("all"); window.scrollTo({ top: 0 });
   };
 
   const handleSelectSport = (cat) => {
     trackVisit(cat);
-    setHash(`/shop/${cat}`);
-    setFilter(cat);
-    setPhase("home");
+    setHash(`/shop/${cat}`); setFilter(cat); setPhase("home");
     setTimeout(() => shopRef.current?.scrollIntoView({ behavior: "smooth" }), 150);
   };
 
   const handleOpenProduct = (product) => {
     const id = product.id || product.slug || product._id;
-    setHash(`/product/${id}`);
-    setActiveProd(product);
-    setPhase("product");
-    window.scrollTo({ top: 0 });
+    setHash(`/product/${id}`); setActiveProd(product);
+    setPhase("product"); window.scrollTo({ top: 0 });
   };
 
   const handleSetFilter = (f) => {
-    setHash(`/shop/${f}`);
-    setFilter(f);
-    if (phase !== "home") {
-      setPhase("home");
-      setActiveProd(null);
-      window.scrollTo({ top: 0 });
-    }
+    setHash(`/shop/${f}`); setFilter(f);
+    if (phase !== "home") { setPhase("home"); setActiveProd(null); window.scrollTo({ top: 0 }); }
   };
 
   const handleGoCheckout = () => {
-    setHash("/checkout");
-    closeCart();
-    setPhase("checkout");
-    window.scrollTo({ top: 0 });
+    setHash("/checkout"); closeCart(); setPhase("checkout"); window.scrollTo({ top: 0 });
   };
 
   const handleCheckoutDone = () => {
-    clearCart();
-    setHash("/shop");
-    setPhase("home");
-    window.scrollTo({ top: 0 });
+    clearCart(); setHash("/shop"); setPhase("home"); window.scrollTo({ top: 0 });
   };
 
-  // ── Shared layout pieces ──────────────────────────────────────────
+  // ── Shared ────────────────────────────────────────────────────────
   const navbar = (
-    <Navbar
-      filter={filter}
-      setFilter={handleSetFilter}
-      cartCount={cart.length}
-      onCartOpen={openCart}
-      onLogoClick={goHome}
-    />
+    <Navbar filter={filter} setFilter={handleSetFilter}
+      cartCount={cart.length} onCartOpen={openCart} onLogoClick={goHome} />
   );
-
   const cartDrawer = (
-    <CartDrawer
-      open={cartOpen}
-      items={cart}
-      onClose={closeCart}
-      onRemove={removeFromCart}
-      onCheckout={handleGoCheckout}
-    />
+    <CartDrawer open={cartOpen} items={cart} onClose={closeCart}
+      onRemove={removeFromCart} onCheckout={handleGoCheckout} />
   );
 
   // ── Phases ────────────────────────────────────────────────────────
-  if (phase === "select") return <SportSelector onSelect={handleSelectSport} />;
+  if (phase === "select") return (
+    <>
+      <SEO />
+      <SportSelector onSelect={handleSelectSport} />
+    </>
+  );
 
   if (phase === "checkout") return (
     <>
+      <SEO title="Checkout" />
       {navbar}
       <div className="page-body page-anim">
         <Ticker />
@@ -178,15 +151,16 @@ export default function App() {
 
   if (phase === "product" && activeProd) return (
     <>
+      <SEO
+        title={activeProd.name}
+        description={activeProd.subtitle || activeProd.desc}
+        image={activeProd.images?.[0]}
+      />
       {navbar}
       <div key={activeProd.id || activeProd._id} className="page-body page-anim">
         <Ticker />
-        <ProductPage
-          product={activeProd}
-          onBack={goHome}
-          onAdd={addToCart}
-          onFilterClick={handleSetFilter}
-        />
+        <ProductPage product={activeProd} onBack={goHome}
+          onAdd={addToCart} onFilterClick={handleSetFilter} />
         <Footer />
       </div>
       {cartDrawer}
@@ -195,6 +169,7 @@ export default function App() {
 
   return (
     <>
+      <SEO />
       {navbar}
       <div className="page-body page-anim">
         <Ticker />
