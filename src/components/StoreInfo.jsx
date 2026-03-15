@@ -32,10 +32,14 @@ export default function StoreInfo() {
 
   // Pull WhatsApp number from backend settings
   useEffect(() => {
-    fetch(`${API}/settings`)
-      .then(r => r.json())
-      .then(s => { if (s.whatsapp_number) setWaNumber(s.whatsapp_number); })
-      .catch(() => {});
+    // Defer settings fetch until after main content renders (improves LCP)
+    const timer = setTimeout(() => {
+      fetch(`${API}/settings`)
+        .then(r => r.json())
+        .then(s => { if (s.whatsapp_number) setWaNumber(s.whatsapp_number); })
+        .catch(() => {});
+    }, 2000); // wait 2s after mount — user doesn't need WA number immediately
+    return () => clearTimeout(timer);
   }, []);
 
   const waLink   = `https://wa.me/${waNumber}?text=${encodeURIComponent("مرحبا HamedoSport، محتاج مساعدة في اختيار معدات البادل")}`;
