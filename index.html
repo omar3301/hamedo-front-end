@@ -4,41 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- ── Preconnect to external origins before anything else ── -->
-    <!-- Fonts -->
+    <!-- Preconnect — must be before any external resource requests -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Cloudinary CDN (product images) -->
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
-    <!-- Instagram CDN (hero images) -->
-    <link rel="dns-prefetch" href="https://instagram.fcai20-2.fna.fbcdn.net" />
-    <link rel="dns-prefetch" href="https://instagram.fcai20-3.fna.fbcdn.net" />
-    <link rel="dns-prefetch" href="https://instagram.fcai20-4.fna.fbcdn.net" />
 
-    <!-- ── Google Fonts — use <link> not @import (non-render-blocking) ── -->
+    <!--
+      display=optional → browser uses fallback font immediately,
+      swaps to web font only if it loads within ~100ms.
+      This eliminates the 830ms font render block on LCP.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;700;800&display=optional"
       rel="stylesheet"
     />
 
-    <!-- ── Primary SEO meta ── -->
+    <!-- SEO -->
     <title>HamedoSport — Official Padel &amp; Football Kits</title>
     <meta name="description" content="Official Padel and Football kits in Egypt. BullPadel, NOX, Siux and more. Cash on Delivery. Shebin El Kom, Menofia." />
     <meta name="keywords" content="padel, football, kits, egypt, bullpadel, nox, siux, shebin el kom, menofia" />
     <meta name="robots" content="index, follow" />
 
-    <!-- ── Open Graph ── -->
+    <!-- Open Graph -->
     <meta property="og:type"        content="website" />
     <meta property="og:url"         content="https://hamedo-front-end.vercel.app/" />
     <meta property="og:title"       content="HamedoSport — Official Padel &amp; Football Kits" />
     <meta property="og:description" content="Shop Padel and Football kits in Egypt. Cash on Delivery." />
-    <meta property="og:image"       content="https://res.cloudinary.com/dsbnexvia/image/upload/v1773322480/black_shirt_nox_exeugt.jpg" />
+    <meta property="og:image"       content="https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_1200/v1773322480/black_shirt_nox_exeugt.jpg" />
 
-    <!-- ── Twitter card ── -->
+    <!-- Twitter -->
     <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:title"       content="HamedoSport — Official Padel &amp; Football Kits" />
     <meta name="twitter:description" content="Shop Padel and Football kits in Egypt. Cash on Delivery." />
-    <meta name="twitter:image"       content="https://res.cloudinary.com/dsbnexvia/image/upload/v1773322480/black_shirt_nox_exeugt.jpg" />
+    <meta name="twitter:image"       content="https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_1200/v1773322480/black_shirt_nox_exeugt.jpg" />
 
     <meta name="theme-color" content="#F4C430" />
     <link rel="icon" href="https://i.ibb.co/cKDd9XNZ/Whats-App-Image-2026-03-09-at-7-40-33-PM.jpg" />

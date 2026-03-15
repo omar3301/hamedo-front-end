@@ -1,19 +1,22 @@
 // Hero — Padel focused
 //
-// ⚠️  IMPORTANT: Instagram CDN URLs expire and hurt performance + Best Practices score.
-//     These are now replaced with the Cloudinary product images already in your database.
-//     To use your own hero photos: upload them via the admin panel → copy the Cloudinary URLs
-//     and paste them into HERO_IMGS below.
+// Cloudinary URL format:
+//   f_auto   = auto format (WebP for Chrome, AVIF for Firefox)
+//   q_auto   = auto quality
+//   w_NNN    = resize to exact displayed width → saves 90%+ of bytes
+//   c_fill   = crop to fill the box (no empty space)
+//
+// Replace these with your own Cloudinary images via the admin upload panel.
 //
 const HERO_IMGS = [
-  // First image = LCP element — must be fast. Using a Cloudinary product image.
-  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_800/v1773322480/black_shirt_nox_exeugt.jpg",
-  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_600/v1773322480/white_shirt_nox_17bhjd.jpg",
-  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_500/v1773321610/white_shirt_cupra_zdkqvb.jpg",
+  // Displayed at ~456x320 → request exactly that size
+  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_456,h_320,c_fill/v1773322480/black_shirt_nox_exeugt.jpg",
+  // Displayed at ~416x270 → request exactly that size
+  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_416,h_270,c_fill/v1773322480/white_shirt_nox_17bhjd.jpg",
+  // Displayed at ~352x210 → request exactly that size
+  "https://res.cloudinary.com/dsbnexvia/image/upload/f_auto,q_auto,w_352,h_210,c_fill/v1773321610/white_shirt_cupra_zdkqvb.jpg",
 ];
 
-// onFilter(category) → sets filter
-// onShop()          → scrolls to grid
 export default function Hero({ onShop, onFilter }) {
 
   const handleCat = (cat) => {
@@ -41,7 +44,8 @@ export default function Hero({ onShop, onFilter }) {
 
           <div className="hero-cats fu d4">
             {["Rackets", "Shoes", "Accessories", "Clothes"].map(cat => (
-              <button key={cat} className="hero-cat-btn" onClick={() => handleCat(cat)}
+              <button key={cat} className="hero-cat-btn"
+                onClick={() => handleCat(cat)}
                 aria-label={`Browse ${cat}`}>
                 {cat}
               </button>
@@ -49,7 +53,9 @@ export default function Hero({ onShop, onFilter }) {
           </div>
 
           <div className="hero-btns fu d5">
-            <button className="btn-y" onClick={onShop} aria-label="Shop all products">Shop Now</button>
+            <button className="btn-y" onClick={onShop} aria-label="Shop all products">
+              Shop Now
+            </button>
             <button className="btn-g"
               onClick={() => window.open("https://www.instagram.com/hamedo.sport/", "_blank")}
               aria-label="Visit HamedoSport on Instagram">
@@ -59,27 +65,28 @@ export default function Hero({ onShop, onFilter }) {
         </div>
 
         <div className="hero-photos">
-          {/* First image — LCP element. fetchpriority=high + eager loading */}
+          {/* LCP image — fetchpriority high, eager, explicit dimensions */}
           <div className="hcard fu d3" style={{ width: "57%", height: 320, top: 0, right: 0 }}>
             <img
               src={HERO_IMGS[0]}
-              alt="Nox padel jersey — official kit"
+              alt="HamedoSport — official padel kit"
               fetchpriority="high"
               loading="eager"
               decoding="sync"
               width="456"
               height="320"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
-          {/* Second + third images — lazy load, not critical */}
           <div className="hcard fu d4" style={{ width: "52%", height: 270, bottom: 0, left: 0 }}>
             <img
               src={HERO_IMGS[1]}
-              alt="Nox white padel shirt"
+              alt="Nox padel shirt — white"
               loading="lazy"
               decoding="async"
               width="416"
               height="270"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
           <div className="hcard fu d5" style={{ width: "44%", height: 210, bottom: 50, right: "5%" }}>
@@ -90,6 +97,7 @@ export default function Hero({ onShop, onFilter }) {
               decoding="async"
               width="352"
               height="210"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
         </div>
