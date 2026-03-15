@@ -9,13 +9,13 @@ export default function CartDrawer({ open, items, onClose, onRemove, onCheckout 
   return (
     <>
       {open && <div className="dback" onClick={onClose} />}
-      <div className={"drawer" + (open ? " open" : "")}>
+      <div className={"drawer" + (open ? " open" : "")} role="dialog" aria-modal="true" aria-label="Shopping cart">
         {/* Header */}
         <div style={{ padding:"18px 20px", borderBottom:"1px solid rgba(255,255,255,.07)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:"1rem" }}>
             Cart <span style={{ color:"#F4C430" }}>({items.length})</span>
           </span>
-          <button className="icon-btn" onClick={onClose}><IX /></button>
+          <button className="icon-btn" onClick={onClose} aria-label="Close cart"><IX aria-hidden="true" /></button>
         </div>
 
         {/* Items */}
@@ -31,7 +31,7 @@ export default function CartDrawer({ open, items, onClose, onRemove, onCheckout 
                 <div style={{ width:58, height:58, borderRadius:9, overflow:"hidden", background:"#1a1a1a", flexShrink:0 }}>
                   <img
                     src={it.images[0]}
-                    alt=""
+                    alt={it.name}
                     style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center" }}
                     onError={e => { e.target.style.opacity=".1"; }}
                   />

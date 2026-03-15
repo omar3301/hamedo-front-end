@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
+import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import "./styles/global.css";
 import SportSelector from "./components/SportSelector";
 import Navbar        from "./components/Navbar";
@@ -16,20 +17,6 @@ import { useCart }     from "./context/CartContext";
 
 const API = "https://hamedo-back-end-production-63a0.up.railway.app/api";
 
-// ── Hash routing helpers ──────────────────────────────────────────────
-const getHash     = () => window.location.hash.replace("#", "") || "/";
-const setHash     = (p) => window.history.pushState({ path: p }, "", "#" + p);
-const replaceHash = (p) => window.history.replaceState({ path: p }, "", "#" + p);
-
-const parseRoute = (hash) => {
-  const parts = hash.replace(/^\//, "").split("/").filter(Boolean);
-  if (!parts.length)           return { phase: "select",   filter: "all", productId: null };
-  if (parts[0] === "shop")     return { phase: "home",     filter: parts[1] || "all", productId: null };
-  if (parts[0] === "product")  return { phase: "product",  filter: "all", productId: parts[1] || null };
-  if (parts[0] === "checkout") return { phase: "checkout", filter: "all", productId: null };
-  return { phase: "select", filter: "all", productId: null };
-};
-
 const trackVisit = (page = "home") =>
   fetch(`${API}/visits`, {
     method: "POST",
@@ -37,141 +24,51 @@ const trackVisit = (page = "home") =>
     body: JSON.stringify({ page }),
   }).catch(() => {});
 
-export default function App() {
-  const { products, productsLoaded, findProduct } = useProducts();
-  const { cart, cartOpen, addToCart, removeFromCart, clearCart, openCart, closeCart } = useCart();
-
-  const [phase,      setPhase]      = useState("select");
-  const [filter,     setFilter]     = useState("all");
-  const [activeProd, setActiveProd] = useState(null);
-  const shopRef      = useRef();
-  const pendingRoute = useRef(null);
-
-  useEffect(() => {
-    const hash  = getHash();
-    const route = parseRoute(hash);
-    replaceHash(hash);
-    if (route.phase === "product") {
-      pendingRoute.current = route;
-      setPhase("home");
-    } else if (route.phase !== "select") {
-      setPhase(route.phase);
-      setFilter(route.filter);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!productsLoaded || !pendingRoute.current) return;
-    const route = pendingRoute.current;
-    pendingRoute.current = null;
-    const prod = findProduct(route.productId);
-    if (prod) { setActiveProd(prod); setPhase("product"); }
-    else       { setPhase("home"); }
-  }, [productsLoaded, products]);
-
-  useEffect(() => {
-    const onPop = () => {
-      const route = parseRoute(getHash());
-      setPhase(route.phase);
-      setFilter(route.filter || "all");
-      if (route.phase === "product" && route.productId) {
-        const prod = findProduct(route.productId);
-        if (prod) setActiveProd(prod);
-        else      setPhase("home");
-      } else {
-        setActiveProd(null);
-        window.scrollTo({ top: 0 });
-      }
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, [products]);
-
-  // ── Navigation ────────────────────────────────────────────────────
-  const goHome = () => {
-    setHash("/shop"); setPhase("home"); setActiveProd(null);
-    setFilter("all"); window.scrollTo({ top: 0 });
-  };
-
-  const handleSelectSport = (cat) => {
+// ── Sport selector page ───────────────────────────────────────────────
+function SelectPage() {
+  const navigate = useNavigate();
+  const handleSelect = (cat) => {
     trackVisit(cat);
-    setHash(`/shop/${cat}`); setFilter(cat); setPhase("home");
-    setTimeout(() => shopRef.current?.scrollIntoView({ behavior: "smooth" }), 150);
+    navigate(`/shop/${cat}`);
   };
-
-  const handleOpenProduct = (product) => {
-    const id = product.id || product.slug || product._id;
-    setHash(`/product/${id}`); setActiveProd(product);
-    setPhase("product"); window.scrollTo({ top: 0 });
-  };
-
-  const handleSetFilter = (f) => {
-    setHash(`/shop/${f}`); setFilter(f);
-    if (phase !== "home") { setPhase("home"); setActiveProd(null); window.scrollTo({ top: 0 }); }
-  };
-
-  const handleGoCheckout = () => {
-    setHash("/checkout"); closeCart(); setPhase("checkout"); window.scrollTo({ top: 0 });
-  };
-
-  const handleCheckoutDone = () => {
-    clearCart(); setHash("/shop"); setPhase("home"); window.scrollTo({ top: 0 });
-  };
-
-  // ── Shared ────────────────────────────────────────────────────────
-  const navbar = (
-    <Navbar filter={filter} setFilter={handleSetFilter}
-      cartCount={cart.length} onCartOpen={openCart} onLogoClick={goHome} />
-  );
-  const cartDrawer = (
-    <CartDrawer open={cartOpen} items={cart} onClose={closeCart}
-      onRemove={removeFromCart} onCheckout={handleGoCheckout} />
-  );
-
-  // ── Phases ────────────────────────────────────────────────────────
-  if (phase === "select") return (
+  return (
     <>
       <SEO />
-      <SportSelector onSelect={handleSelectSport} />
+      <SportSelector onSelect={handleSelect} />
     </>
   );
+}
 
-  if (phase === "checkout") return (
-    <>
-      <SEO title="Checkout" />
-      {navbar}
-      <div className="page-body page-anim">
-        <Ticker />
-        <CheckoutPage items={cart} onBack={goHome} onDone={handleCheckoutDone} />
-        <Footer />
-      </div>
-      {cartDrawer}
-    </>
-  );
+// ── Shop / home page ──────────────────────────────────────────────────
+function ShopPage() {
+  const navigate   = useNavigate();
+  const { filter } = useParams();
+  const shopRef    = useRef();
+  const { products, productsLoaded } = useProducts();
+  const { cart, cartOpen, openCart, closeCart, removeFromCart } = useCart();
+  const activeFilter = filter || "all";
 
-  if (phase === "product" && activeProd) return (
-    <>
-      <SEO
-        title={activeProd.name}
-        description={activeProd.subtitle || activeProd.desc}
-        image={activeProd.images?.[0]}
-      />
-      {navbar}
-      <div key={activeProd.id || activeProd._id} className="page-body page-anim">
-        <Ticker />
-        <ProductPage product={activeProd} onBack={goHome}
-          onAdd={addToCart} onFilterClick={handleSetFilter} />
-        <Footer />
-      </div>
-      {cartDrawer}
-    </>
-  );
+  const handleOpenProduct = (product) => {
+    const id = product.slug || product._id;
+    navigate(`/product/${id}`);
+    window.scrollTo({ top: 0 });
+  };
+
+  const handleSetFilter = (f) => navigate(`/shop/${f}`);
+  const handleGoCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
+  const goHome = () => navigate("/shop");
 
   return (
     <>
       <SEO />
-      {navbar}
-      <div className="page-body page-anim">
+      <Navbar
+        filter={activeFilter}
+        setFilter={handleSetFilter}
+        cartCount={cart.length}
+        onCartOpen={openCart}
+        onLogoClick={goHome}
+      />
+      <main id="main-content" className="page-body page-anim">
         <Ticker />
         <Hero
           onShop={() => shopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
@@ -180,15 +77,128 @@ export default function App() {
         <ProductGrid
           products={products}
           productsLoaded={productsLoaded}
-          filter={filter}
+          filter={activeFilter}
           setFilter={handleSetFilter}
           onProductClick={handleOpenProduct}
           shopRef={shopRef}
         />
         <StoreInfo />
         <Footer />
-      </div>
-      {cartDrawer}
+      </main>
+      <CartDrawer
+        open={cartOpen} items={cart} onClose={closeCart}
+        onRemove={removeFromCart} onCheckout={handleGoCheckout}
+      />
     </>
+  );
+}
+
+// ── Product detail page ───────────────────────────────────────────────
+function ProductDetailPage() {
+  const navigate   = useNavigate();
+  const { slug }   = useParams();
+  const { findProduct, productsLoaded } = useProducts();
+  const { cart, cartOpen, openCart, closeCart, addToCart, removeFromCart } = useCart();
+
+  const product = findProduct(slug);
+  const goHome  = () => navigate("/shop");
+  const handleSetFilter = (f) => navigate(`/shop/${f}`);
+  const handleGoCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
+
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [slug]);
+
+  // Not loaded yet — wait
+  if (!productsLoaded) return null;
+
+  // Product not found — redirect home
+  if (!product) { navigate("/shop", { replace: true }); return null; }
+
+  return (
+    <>
+      <SEO
+        title={product.name}
+        description={product.subtitle || product.desc}
+        image={product.images?.[0]}
+      />
+      <Navbar
+        filter="all"
+        setFilter={handleSetFilter}
+        cartCount={cart.length}
+        onCartOpen={openCart}
+        onLogoClick={goHome}
+      />
+      <main id="main-content" className="page-body page-anim" key={slug}>
+        <Ticker />
+        <ProductPage
+          product={product}
+          onBack={goHome}
+          onAdd={addToCart}
+          onFilterClick={handleSetFilter}
+        />
+        <Footer />
+      </main>
+      <CartDrawer
+        open={cartOpen} items={cart} onClose={closeCart}
+        onRemove={removeFromCart} onCheckout={handleGoCheckout}
+      />
+    </>
+  );
+}
+
+// ── Checkout page ─────────────────────────────────────────────────────
+function CheckoutRoute() {
+  const navigate = useNavigate();
+  const { cart, cartOpen, openCart, closeCart, clearCart, removeFromCart } = useCart();
+  const goHome = () => navigate("/shop");
+  const handleGoCheckout = () => { closeCart(); navigate("/checkout"); };
+
+  const handleDone = () => {
+    clearCart();
+    navigate("/shop");
+    window.scrollTo({ top: 0 });
+  };
+
+  return (
+    <>
+      <SEO title="Checkout" />
+      <Navbar
+        filter="all"
+        setFilter={(f) => navigate(`/shop/${f}`)}
+        cartCount={cart.length}
+        onCartOpen={openCart}
+        onLogoClick={goHome}
+      />
+      <main id="main-content" className="page-body page-anim">
+        <Ticker />
+        <CheckoutPage items={cart} onBack={goHome} onDone={handleDone} />
+        <Footer />
+      </main>
+      <CartDrawer
+        open={cartOpen} items={cart} onClose={closeCart}
+        onRemove={removeFromCart} onCheckout={handleGoCheckout}
+      />
+    </>
+  );
+}
+
+// ── Root — redirect / → /select ───────────────────────────────────────
+function Root() {
+  const navigate = useNavigate();
+  useEffect(() => { navigate("/select", { replace: true }); }, []);
+  return null;
+}
+
+// ── App shell ─────────────────────────────────────────────────────────
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/"               element={<Root />} />
+      <Route path="/select"         element={<SelectPage />} />
+      <Route path="/shop"           element={<ShopPage />} />
+      <Route path="/shop/:filter"   element={<ShopPage />} />
+      <Route path="/product/:slug"  element={<ProductDetailPage />} />
+      <Route path="/checkout"       element={<CheckoutRoute />} />
+      <Route path="*"               element={<Root />} />
+    </Routes>
   );
 }
