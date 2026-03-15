@@ -2,7 +2,7 @@
    HAMEDOSPORT — GLOBAL STYLES
    Brand: Black #080808 · Yellow #F4C430
 ───────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;700;800&display=swap');
+/* Fonts loaded via <link> in index.html — faster than @import */
 
 /* ── RESET ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
