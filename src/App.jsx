@@ -1,17 +1,19 @@
 import { useRef, useEffect } from "react";
 import { Routes, Route, useNavigate, useParams, useLocation } from "react-router-dom";
 import "./styles/global.css";
-import SportSelector from "./components/SportSelector";
-import Navbar        from "./components/Navbar";
-import Ticker        from "./components/Ticker";
-import Hero          from "./components/Hero";
-import ProductGrid   from "./components/ProductGrid";
-import ProductPage   from "./components/ProductPage";
-import CartDrawer    from "./components/CartDrawer";
-import CheckoutPage  from "./pages/CheckoutPage";
-import StoreInfo     from "./components/StoreInfo";
-import Footer        from "./components/Footer";
-import SEO           from "./components/SEO";
+import SportSelector  from "./components/SportSelector";
+import Navbar         from "./components/Navbar";
+import Ticker         from "./components/Ticker";
+import Hero           from "./components/Hero";
+import ProductGrid    from "./components/ProductGrid";
+import ProductPage    from "./components/ProductPage";
+import CartDrawer     from "./components/CartDrawer";
+import CheckoutPage   from "./pages/CheckoutPage";
+import NotFound       from "./pages/NotFound";
+import StoreInfo      from "./components/StoreInfo";
+import Footer         from "./components/Footer";
+import SEO            from "./components/SEO";
+import RouteProgress  from "./components/RouteProgress";
 import { useProducts } from "./context/ProductContext";
 import { useCart }     from "./context/CartContext";
 
@@ -24,181 +26,132 @@ const trackVisit = (page = "home") =>
     body: JSON.stringify({ page }),
   }).catch(() => {});
 
-// ── Sport selector page ───────────────────────────────────────────────
+// ── Sport selector ────────────────────────────────────────────────────
 function SelectPage() {
   const navigate = useNavigate();
-  const handleSelect = (cat) => {
-    trackVisit(cat);
-    navigate(`/shop/${cat}`);
-  };
   return (
     <>
       <SEO />
-      <SportSelector onSelect={handleSelect} />
+      <SportSelector onSelect={(cat) => { trackVisit(cat); navigate(`/shop/${cat}`); }} />
     </>
   );
 }
 
-// ── Shop / home page ──────────────────────────────────────────────────
+// ── Shop page ─────────────────────────────────────────────────────────
 function ShopPage() {
-  const navigate   = useNavigate();
-  const { filter } = useParams();
-  const shopRef    = useRef();
+  const navigate             = useNavigate();
+  const { filter }           = useParams();
+  const shopRef              = useRef();
   const { products, productsLoaded } = useProducts();
   const { cart, cartOpen, openCart, closeCart, removeFromCart } = useCart();
-  const activeFilter = filter || "all";
+  const activeFilter         = filter || "all";
 
-  const handleOpenProduct = (product) => {
-    const id = product.slug || product._id;
-    navigate(`/product/${id}`);
-    window.scrollTo({ top: 0 });
-  };
-
-  const handleSetFilter = (f) => navigate(`/shop/${f}`);
+  const goHome           = () => navigate("/shop");
+  const handleSetFilter  = (f) => navigate(`/shop/${f}`);
   const handleGoCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
-  const goHome = () => navigate("/shop");
+  const handleOpenProd   = (p) => { navigate(`/product/${p.slug || p._id}`); window.scrollTo({ top: 0 }); };
 
   return (
     <>
       <SEO />
-      <Navbar
-        filter={activeFilter}
-        setFilter={handleSetFilter}
-        cartCount={cart.length}
-        onCartOpen={openCart}
-        onLogoClick={goHome}
-      />
+      <Navbar filter={activeFilter} setFilter={handleSetFilter}
+        cartCount={cart.length} onCartOpen={openCart} onLogoClick={goHome} />
       <main id="main-content" className="page-body page-anim">
         <Ticker />
         <Hero
           onShop={() => shopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
           onFilter={handleSetFilter}
         />
-        <ProductGrid
-          products={products}
-          productsLoaded={productsLoaded}
-          filter={activeFilter}
-          setFilter={handleSetFilter}
-          onProductClick={handleOpenProduct}
-          shopRef={shopRef}
-        />
+        <ProductGrid products={products} productsLoaded={productsLoaded}
+          filter={activeFilter} setFilter={handleSetFilter}
+          onProductClick={handleOpenProd} shopRef={shopRef} />
         <StoreInfo />
         <Footer />
       </main>
-      <CartDrawer
-        open={cartOpen} items={cart} onClose={closeCart}
-        onRemove={removeFromCart} onCheckout={handleGoCheckout}
-      />
+      <CartDrawer open={cartOpen} items={cart} onClose={closeCart}
+        onRemove={removeFromCart} onCheckout={handleGoCheckout} />
     </>
   );
 }
 
-// ── Product detail page ───────────────────────────────────────────────
+// ── Product detail ────────────────────────────────────────────────────
 function ProductDetailPage() {
-  const navigate   = useNavigate();
-  const { slug }   = useParams();
+  const navigate    = useNavigate();
+  const { slug }    = useParams();
   const { findProduct, productsLoaded } = useProducts();
   const { cart, cartOpen, openCart, closeCart, addToCart, removeFromCart } = useCart();
 
-  const product = findProduct(slug);
-  const goHome  = () => navigate("/shop");
-  const handleSetFilter = (f) => navigate(`/shop/${f}`);
-  const handleGoCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
-
   useEffect(() => { window.scrollTo({ top: 0 }); }, [slug]);
 
-  // Not loaded yet — wait
-  if (!productsLoaded) return null;
+  const product      = findProduct(slug);
+  const goHome       = () => navigate("/shop");
+  const handleFilter = (f) => navigate(`/shop/${f}`);
+  const handleCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
 
-  // Product not found — redirect home
-  if (!product) { navigate("/shop", { replace: true }); return null; }
+  if (!productsLoaded) return null;
+  if (!product) return <NotFound />;
 
   return (
     <>
-      <SEO
-        title={product.name}
-        description={product.subtitle || product.desc}
-        image={product.images?.[0]}
-      />
-      <Navbar
-        filter="all"
-        setFilter={handleSetFilter}
-        cartCount={cart.length}
-        onCartOpen={openCart}
-        onLogoClick={goHome}
-      />
+      <SEO title={product.name} description={product.subtitle || product.desc} image={product.images?.[0]} />
+      <Navbar filter="all" setFilter={handleFilter}
+        cartCount={cart.length} onCartOpen={openCart} onLogoClick={goHome} />
       <main id="main-content" className="page-body page-anim" key={slug}>
         <Ticker />
-        <ProductPage
-          product={product}
-          onBack={goHome}
-          onAdd={addToCart}
-          onFilterClick={handleSetFilter}
-        />
+        <ProductPage product={product} onBack={goHome} onAdd={addToCart} onFilterClick={handleFilter} />
         <Footer />
       </main>
-      <CartDrawer
-        open={cartOpen} items={cart} onClose={closeCart}
-        onRemove={removeFromCart} onCheckout={handleGoCheckout}
-      />
+      <CartDrawer open={cartOpen} items={cart} onClose={closeCart}
+        onRemove={removeFromCart} onCheckout={handleCheckout} />
     </>
   );
 }
 
-// ── Checkout page ─────────────────────────────────────────────────────
+// ── Checkout ──────────────────────────────────────────────────────────
 function CheckoutRoute() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { cart, cartOpen, openCart, closeCart, clearCart, removeFromCart } = useCart();
-  const goHome = () => navigate("/shop");
-  const handleGoCheckout = () => { closeCart(); navigate("/checkout"); };
-
-  const handleDone = () => {
-    clearCart();
-    navigate("/shop");
-    window.scrollTo({ top: 0 });
-  };
+  const goHome    = () => navigate("/shop");
+  const handleCheckout = () => { closeCart(); navigate("/checkout"); };
 
   return (
     <>
       <SEO title="Checkout" />
-      <Navbar
-        filter="all"
-        setFilter={(f) => navigate(`/shop/${f}`)}
-        cartCount={cart.length}
-        onCartOpen={openCart}
-        onLogoClick={goHome}
-      />
+      <Navbar filter="all" setFilter={(f) => navigate(`/shop/${f}`)}
+        cartCount={cart.length} onCartOpen={openCart} onLogoClick={goHome} />
       <main id="main-content" className="page-body page-anim">
         <Ticker />
-        <CheckoutPage items={cart} onBack={goHome} onDone={handleDone} />
+        <CheckoutPage items={cart} onBack={goHome}
+          onDone={() => { clearCart(); navigate("/shop"); window.scrollTo({ top: 0 }); }} />
         <Footer />
       </main>
-      <CartDrawer
-        open={cartOpen} items={cart} onClose={closeCart}
-        onRemove={removeFromCart} onCheckout={handleGoCheckout}
-      />
+      <CartDrawer open={cartOpen} items={cart} onClose={closeCart}
+        onRemove={removeFromCart} onCheckout={handleCheckout} />
     </>
   );
 }
 
-// ── Root — redirect / → /select ───────────────────────────────────────
+// ── Root redirect ─────────────────────────────────────────────────────
 function Root() {
   const navigate = useNavigate();
   useEffect(() => { navigate("/select", { replace: true }); }, []);
   return null;
 }
 
-// ── App shell ─────────────────────────────────────────────────────────
+// ── App ───────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <Routes>
-      <Route path="/"               element={<Root />} />
-      <Route path="/select"         element={<SelectPage />} />
-      <Route path="/shop"           element={<ShopPage />} />
-      <Route path="/shop/:filter"   element={<ShopPage />} />
-      <Route path="/product/:slug"  element={<ProductDetailPage />} />
-      <Route path="/checkout"       element={<CheckoutRoute />} />
-      <Route path="*"               element={<Root />} />
-    </Routes>
+    <>
+      <RouteProgress />
+      <Routes>
+        <Route path="/"              element={<Root />} />
+        <Route path="/select"        element={<SelectPage />} />
+        <Route path="/shop"          element={<ShopPage />} />
+        <Route path="/shop/:filter"  element={<ShopPage />} />
+        <Route path="/product/:slug" element={<ProductDetailPage />} />
+        <Route path="/checkout"      element={<CheckoutRoute />} />
+        <Route path="*"              element={<NotFound />} />
+      </Routes>
+    </>
   );
 }
