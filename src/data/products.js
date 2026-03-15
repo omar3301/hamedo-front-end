@@ -8,7 +8,7 @@ export const PRODUCTS = [
   {
     id: "bullpadel-cupra-black",
     sport: "padel",
-    category: "Shirts",
+    category: "Clothes",
     brand: "BullPadel",
     name: "BullPadel × CUPRA",
     subtitle: "Premier Padel Circuit Tee",
@@ -26,7 +26,7 @@ export const PRODUCTS = [
   {
     id: "bullpadel-cupra-white",
     sport: "padel",
-    category: "Shirts",
+    category: "Clothes",
     brand: "BullPadel",
     name: "BullPadel × CUPRA",
     subtitle: "Premier Padel Circuit Tee",
@@ -44,7 +44,7 @@ export const PRODUCTS = [
   {
     id: "nox-premier-white",
     sport: "padel",
-    category: "Shirts",
+    category: "Clothes",
     brand: "NOX",
     name: "NOX Premier Padel Tee",
     subtitle: "Official Circuit Kit",
@@ -61,7 +61,7 @@ export const PRODUCTS = [
   {
     id: "nox-premier-black",
     sport: "padel",
-    category: "Shirts",
+    category: "Clothes",
     brand: "NOX",
     name: "NOX Premier Padel Tee",
     subtitle: "Official Circuit Kit",
@@ -80,7 +80,7 @@ export const PRODUCTS = [
   {
     id: "football-tiger-orange",
     sport: "football",
-    category: "Jerseys",
+    category: "Clothes",
     brand: "Kipsta",
     name: "Kids Tiger Shirt",
     subtitle: "Short Sleeve Football Jersey",
@@ -102,7 +102,7 @@ export const PRODUCTS = [
   {
     id: "football-f100",
     sport: "football",
-    category: "Jerseys",
+    category: "Clothes",
     brand: "Kipsta",
     name: "F100 Football Shirt",
     subtitle: "Training Jersey",
