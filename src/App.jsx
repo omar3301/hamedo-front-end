@@ -29,22 +29,38 @@ const trackVisit = (page = "home") =>
 // ── Sport selector ────────────────────────────────────────────────────
 function SelectPage() {
   const navigate = useNavigate();
+  const handleSelect = (cat) => {
+    trackVisit(cat);
+    // Pass state so ShopPage knows to auto-scroll to grid
+    navigate(`/shop/${cat}`, { state: { scrollToGrid: true } });
+  };
   return (
     <>
       <SEO />
-      <SportSelector onSelect={(cat) => { trackVisit(cat); navigate(`/shop/${cat}`); }} />
+      <SportSelector onSelect={handleSelect} />
     </>
   );
 }
 
 // ── Shop page ─────────────────────────────────────────────────────────
 function ShopPage() {
-  const navigate             = useNavigate();
-  const { filter }           = useParams();
-  const shopRef              = useRef();
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const { filter } = useParams();
+  const shopRef    = useRef();
   const { products, productsLoaded } = useProducts();
   const { cart, cartOpen, openCart, closeCart, removeFromCart } = useCart();
-  const activeFilter         = filter || "all";
+  const activeFilter = filter || "all";
+
+  // Auto-scroll to product grid when coming from the select page
+  useEffect(() => {
+    if (location.state?.scrollToGrid) {
+      const timeout = setTimeout(() => {
+        shopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 400); // wait for page animation to start
+      return () => clearTimeout(timeout);
+    }
+  }, [location.state]);
 
   const goHome           = () => navigate("/shop");
   const handleSetFilter  = (f) => navigate(`/shop/${f}`);
@@ -76,17 +92,24 @@ function ShopPage() {
 
 // ── Product detail ────────────────────────────────────────────────────
 function ProductDetailPage() {
-  const navigate    = useNavigate();
-  const { slug }    = useParams();
+  const navigate = useNavigate();
+  const { slug } = useParams();
   const { findProduct, productsLoaded } = useProducts();
   const { cart, cartOpen, openCart, closeCart, addToCart, removeFromCart } = useCart();
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [slug]);
 
-  const product      = findProduct(slug);
-  const goHome       = () => navigate("/shop");
-  const handleFilter = (f) => navigate(`/shop/${f}`);
+  const product        = findProduct(slug);
+  const goHome         = () => navigate("/shop");
+  const handleFilter   = (f) => navigate(`/shop/${f}`);
   const handleCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
+
+  // Buy Now — add to cart then go straight to checkout
+  const handleBuyNow = (product, size, qty) => {
+    addToCart(product, size, qty);
+    navigate("/checkout");
+    window.scrollTo({ top: 0 });
+  };
 
   if (!productsLoaded) return null;
   if (!product) return <NotFound />;
@@ -98,7 +121,13 @@ function ProductDetailPage() {
         cartCount={cart.length} onCartOpen={openCart} onLogoClick={goHome} />
       <main id="main-content" className="page-body page-anim" key={slug}>
         <Ticker />
-        <ProductPage product={product} onBack={goHome} onAdd={addToCart} onFilterClick={handleFilter} />
+        <ProductPage
+          product={product}
+          onBack={goHome}
+          onAdd={addToCart}
+          onBuyNow={handleBuyNow}
+          onFilterClick={handleFilter}
+        />
         <Footer />
       </main>
       <CartDrawer open={cartOpen} items={cart} onClose={closeCart}
@@ -109,9 +138,9 @@ function ProductDetailPage() {
 
 // ── Checkout ──────────────────────────────────────────────────────────
 function CheckoutRoute() {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { cart, cartOpen, openCart, closeCart, clearCart, removeFromCart } = useCart();
-  const goHome    = () => navigate("/shop");
+  const goHome         = () => navigate("/shop");
   const handleCheckout = () => { closeCart(); navigate("/checkout"); };
 
   return (
@@ -131,14 +160,12 @@ function CheckoutRoute() {
   );
 }
 
-// ── Root redirect ─────────────────────────────────────────────────────
 function Root() {
   const navigate = useNavigate();
   useEffect(() => { navigate("/select", { replace: true }); }, []);
   return null;
 }
 
-// ── App ───────────────────────────────────────────────────────────────
 export default function App() {
   return (
     <>
