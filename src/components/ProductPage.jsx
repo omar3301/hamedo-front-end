@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { IPlus, IMinus, IChev } from "./ui";
 import Breadcrumb from "./Breadcrumb";
 import Lightbox from "yet-another-react-lightbox";
@@ -7,7 +7,7 @@ import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 
-// ── Smooth swipe hook (Kept for the main page gallery) ─────────────────
+// ── Smooth swipe hook ──────────────────────────────────────────────────
 function useSwipe(onSwipeLeft, onSwipeRight) {
   const touch = useRef({ x: 0, y: 0, time: 0 });
 
@@ -115,15 +115,50 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
     transition: "transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease",
   };
 
+  // ── Hardware Back Button & Browser History Interception ──
+  useEffect(() => {
+    const handlePopState = () => {
+      // If the back button is pressed, ensure the zoom is closed.
+      setZoomOpen(false);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const openLightbox = () => {
+    // Push a state to the browser history so the back button has something to "pop"
+    window.history.pushState({ lightboxOpen: true }, "");
+    setZoomOpen(true);
+  };
+
+  const closeLightbox = () => {
+    // If they click X or outside, we manually trigger a "back" to clear the history state
+    if (window.history.state?.lightboxOpen) {
+      window.history.back(); 
+    } else {
+      setZoomOpen(false);
+    }
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "#080808" }}>
       
       <Lightbox
         open={zoomOpen}
-        close={() => setZoomOpen(false)}
+        close={closeLightbox}
         index={imgIdx}
         slides={images.map(src => ({ src }))}
         plugins={[Zoom, Thumbnails]}
+        controller={{ closeOnBackdropClick: true }}
+        styles={{
+          root: {
+            "--yarl__color_backdrop": "rgba(0, 0, 0, 0.75)", // Semi-transparent black
+          },
+          container: {
+            backdropFilter: "blur(12px)", // The glass/blur effect
+            WebkitBackdropFilter: "blur(12px)", // Support for Safari
+          }
+        }}
         zoom={{
           maxZoomPixelRatio: 4,
           zoomInMultiplier: 2,
@@ -148,7 +183,7 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
             <div
               className="pg-main-img"
               style={{ cursor: "zoom-in", userSelect: "none", overflow: "hidden" }}
-              onClick={() => setZoomOpen(true)}
+              onClick={openLightbox}
               onTouchStart={swipe.onTouchStart}
               onTouchEnd={swipe.onTouchEnd}
             >
