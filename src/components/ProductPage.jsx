@@ -1,211 +1,49 @@
-import { useState, useRef } from "react";
-import { IPlus, IMinus, IChev, IX } from "./ui";
+import { useState, useRef, useCallback } from "react";
+import { IPlus, IMinus, IChev } from "./ui";
 import Breadcrumb from "./Breadcrumb";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
 
-// ── Swipe hook ─────────────────────────────────────────────────────────
+// ── Smooth swipe hook (Kept for the main page gallery) ─────────────────
 function useSwipe(onSwipeLeft, onSwipeRight) {
   const touch = useRef({ x: 0, y: 0, time: 0 });
 
-  const onTouchStart = (e) => {
+  const onTouchStart = useCallback((e) => {
     touch.current = {
       x:    e.touches[0].clientX,
       y:    e.touches[0].clientY,
       time: Date.now(),
     };
-  };
+  }, []);
 
-  const onTouchEnd = (e) => {
+  const onTouchEnd = useCallback((e) => {
     const dx   = e.changedTouches[0].clientX - touch.current.x;
     const dy   = e.changedTouches[0].clientY - touch.current.y;
     const dt   = Date.now() - touch.current.time;
     const fast = dt < 400;
-    const horiz = Math.abs(dx) > Math.abs(dy) * 1.5; // more horizontal than vertical
+    const horiz = Math.abs(dx) > Math.abs(dy) * 1.5;
     const far   = Math.abs(dx) > 40;
-
     if (fast && horiz && far) {
-      if (dx < 0) onSwipeLeft();   // swipe left → next image
-      else         onSwipeRight();  // swipe right → prev image
+      if (dx < 0) onSwipeLeft();
+      else         onSwipeRight();
     }
-  };
+  }, [onSwipeLeft, onSwipeRight]);
 
   return { onTouchStart, onTouchEnd };
 }
 
-// ── Zoom Lightbox ──────────────────────────────────────────────────────
-function ZoomLightbox({ images, startIdx, onClose }) {
-  const [idx, setIdx]     = useState(startIdx);
-  const [scale, setScale] = useState(1);
-  const [pos, setPos]     = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart         = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
-  const touchRef          = useRef({});
-  const imgRef            = useRef();
-
-  const resetZoom = () => { setScale(1); setPos({ x: 0, y: 0 }); };
-
-  const prev = () => { setIdx(i => (i - 1 + images.length) % images.length); resetZoom(); };
-  const next = () => { setIdx(i => (i + 1) % images.length); resetZoom(); };
-
-  // Only allow swiping to change images if not zoomed in
-  const swipe = useSwipe(
-    () => { if (scale === 1) next(); }, 
-    () => { if (scale === 1) prev(); }
-  );
-
-  // Button Zoom Logic
-  const handleZoomIn = (e) => {
-    e.stopPropagation();
-    setScale(s => Math.min(s + 0.8, 4)); // Max zoom level 4
-  };
-
-  const handleZoomOut = (e) => {
-    e.stopPropagation();
-    setScale(s => {
-      const newScale = Math.max(s - 0.8, 1);
-      if (newScale === 1) setPos({ x: 0, y: 0 }); // Reset position when fully zoomed out
-      return newScale;
-    });
-  };
-
-  // Double-tap to zoom
-  const lastTap = useRef(0);
-  const handleImgTap = (e) => {
-    e.stopPropagation();
-    const now = Date.now();
-    if (now - lastTap.current < 300) {
-      if (scale > 1) {
-        resetZoom();
-      } else {
-        setScale(2.5);
-      }
-    }
-    lastTap.current = now;
-  };
-
-  // Desktop Mouse Panning
-  const onMouseDown = (e) => {
-    if (scale === 1) return;
-    e.preventDefault();
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, posX: pos.x, posY: pos.y };
-  };
-
-  const onMouseMove = (e) => {
-    if (!isDragging || scale === 1) return;
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
-    setPos({ x: dragStart.current.posX + dx, y: dragStart.current.posY + dy });
-  };
-
-  const onMouseUpOrLeave = () => {
-    setIsDragging(false);
-  };
-
-  // Touch Pinch & Panning
-  const onTouchStart = (e) => {
-    if (scale === 1) swipe.onTouchStart(e);
-
-    if (e.touches.length === 2) {
-      touchRef.current.pinchDist  = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      touchRef.current.pinchScale = scale;
-    } else if (scale > 1 && e.touches.length === 1) {
-      setIsDragging(true);
-      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, posX: pos.x, posY: pos.y };
-    }
-  };
-
-  const onTouchMove = (e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      setScale(Math.min(4, Math.max(1, touchRef.current.pinchScale * (dist / touchRef.current.pinchDist))));
-    } else if (scale > 1 && isDragging && e.touches.length === 1) {
-      const dx = e.touches[0].clientX - dragStart.current.x;
-      const dy = e.touches[0].clientY - dragStart.current.y;
-      setPos({ x: dragStart.current.posX + dx, y: dragStart.current.posY + dy });
-    }
-  };
-
-  const onTouchEnd = (e) => {
-    if (scale === 1) swipe.onTouchEnd(e);
-    setIsDragging(false);
-  };
-
-  return (
-    <div className="zoom-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      
-      {/* Zoom In/Out UI Buttons */}
-      <div className="zoom-controls">
-        <button className="zoom-btn" onClick={handleZoomIn} aria-label="Zoom in">
-          <IPlus />
-        </button>
-        <button className="zoom-btn" onClick={handleZoomOut} disabled={scale === 1} aria-label="Zoom out">
-          <IMinus />
-        </button>
-      </div>
-
-      <button className="zoom-close" onClick={onClose} aria-label="Close zoom"><IX /></button>
-
-      <div
-        className="zoom-img-wrap"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUpOrLeave}
-        onMouseLeave={onMouseUpOrLeave}
-        onClick={handleImgTap}
-        style={{ 
-          touchAction: scale > 1 ? "none" : "pan-y",
-          cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in"
-        }}
-      >
-        <img
-          ref={imgRef}
-          src={images[idx]}
-          alt=""
-          style={{
-            transform:  `scale(${scale}) translate(${pos.x / scale}px,${pos.y / scale}px)`,
-            transition: isDragging ? "none" : "transform .2s ease-out",
-          }}
-          draggable={false}
-        />
-      </div>
-
-      {images.length > 1 && (
-        <>
-          <button className="zoom-arrow zoom-arrow-l" onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Previous image"><IChev dir="left" /></button>
-          <button className="zoom-arrow zoom-arrow-r" onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Next image"><IChev dir="right" /></button>
-          <div className="zoom-dots">
-            {images.map((_, i) => (
-              <div key={i} className={"zoom-dot" + (i === idx ? " on" : "")}
-                onClick={(e) => { e.stopPropagation(); setIdx(i); resetZoom(); }}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      <div className="zoom-hint">Swipe · Drag to pan · Double-tap/Pinch to zoom</div>
-    </div>
-  );
-}
-
 // ── Product Page ───────────────────────────────────────────────────────
-export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }) {
+export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFilterClick }) {
   const variants = p.variants?.length
     ? p.variants.filter(v => v.active !== false)
     : [{ color: p.color, colorHex: p.colorHex, images: p.images, sizes: p.sizes?.map(s => ({ label: s })) || [] }];
 
   const [variantIdx, setVariantIdx] = useState(0);
   const [imgIdx,     setImgIdx]     = useState(0);
+  const [slideDir,   setSlideDir]   = useState(null); // "left" | "right" | null
   const [size,       setSize]       = useState(null);
   const [qty,        setQty]        = useState(1);
   const [err,        setErr]        = useState(false);
@@ -215,22 +53,48 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
   const images  = variant?.images || p.images || [];
   const sizes   = (variant?.sizes || []).map(s => typeof s === "string" ? s : s.label);
 
-  const prevImg = () => setImgIdx(i => (i - 1 + images.length) % images.length);
-  const nextImg = () => setImgIdx(i => (i + 1) % images.length);
+  // Smooth slide navigation
+  const goTo = useCallback((newIdx, dir) => {
+    if (newIdx === imgIdx) return;
+    setSlideDir(dir);
+    setTimeout(() => {
+      setImgIdx(newIdx);
+      setSlideDir(null);
+    }, 280);
+  }, [imgIdx]);
+
+  const prevImg = useCallback(() => {
+    goTo((imgIdx - 1 + images.length) % images.length, "right");
+  }, [imgIdx, images.length, goTo]);
+
+  const nextImg = useCallback(() => {
+    goTo((imgIdx + 1) % images.length, "left");
+  }, [imgIdx, images.length, goTo]);
+
+  const swipe = useSwipe(nextImg, prevImg);
 
   const switchVariant = (i) => { setVariantIdx(i); setImgIdx(0); setSize(null); setErr(false); };
-
-  // Touch swipe on the main product image
-  const swipe = useSwipe(nextImg, prevImg);
 
   const hasDiscount  = p.discountActive && p.discountPrice && p.discountPrice < p.price;
   const displayPrice = hasDiscount ? p.discountPrice : p.price;
   const discountPct  = hasDiscount ? Math.round((1 - p.discountPrice / p.price) * 100) : 0;
   const totalPrice   = (displayPrice || 0) * qty;
 
+  const validate = () => {
+    if (!size && sizes.length > 0) { setErr(true); return false; }
+    return true;
+  };
+
   const handleAdd = () => {
-    if (!size) { setErr(true); return; }
-    onAdd({ ...p, color: variant.color, colorHex: variant.colorHex, images }, size, qty);
+    if (!validate()) return;
+    const s = size || "One Size";
+    onAdd({ ...p, color: variant.color, colorHex: variant.colorHex, images }, s, qty);
+  };
+
+  const handleBuyNow = () => {
+    if (!validate()) return;
+    const s = size || "One Size";
+    onBuyNow({ ...p, color: variant.color, colorHex: variant.colorHex, images }, s, qty);
   };
 
   const crumbs = [
@@ -240,11 +104,37 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
     { label: p.name },
   ];
 
+  // Slide animation classes
+  const slideStyle = slideDir ? {
+    transform: slideDir === "left" ? "translateX(-8%)" : "translateX(8%)",
+    opacity: 0,
+    transition: "transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease",
+  } : {
+    transform: "translateX(0)",
+    opacity: 1,
+    transition: "transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease",
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "#080808" }}>
-      {zoomOpen && (
-        <ZoomLightbox images={images} startIdx={imgIdx} onClose={() => setZoomOpen(false)} />
-      )}
+      
+      <Lightbox
+        open={zoomOpen}
+        close={() => setZoomOpen(false)}
+        index={imgIdx}
+        slides={images.map(src => ({ src }))}
+        plugins={[Zoom, Thumbnails]}
+        zoom={{
+          maxZoomPixelRatio: 4,
+          zoomInMultiplier: 2,
+          doubleTapDelay: 300,
+          doubleClickDelay: 300,
+          keyboardMoveDistance: 50,
+          wheelZoomDistanceFactor: 100,
+          pinchZoomDistanceFactor: 100,
+          scrollToZoom: false,
+        }}
+      />
 
       <div className="container" style={{ paddingTop: 16, paddingBottom: 4 }}>
         <Breadcrumb crumbs={crumbs} />
@@ -257,43 +147,35 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
           <div className="pg-gallery">
             <div
               className="pg-main-img"
-              style={{ cursor: "zoom-in", userSelect: "none" }}
+              style={{ cursor: "zoom-in", userSelect: "none", overflow: "hidden" }}
               onClick={() => setZoomOpen(true)}
               onTouchStart={swipe.onTouchStart}
-              onTouchEnd={(e) => { swipe.onTouchEnd(e); }}
+              onTouchEnd={swipe.onTouchEnd}
             >
               <img
                 src={images[imgIdx]}
                 alt={p.name}
                 key={`${variantIdx}-${imgIdx}`}
-                className="pg-img fi"
+                className="pg-img"
                 draggable={false}
+                style={slideStyle}
               />
 
               {images.length > 1 && (
                 <>
-                  <button
-                    className="pg-arrow pg-arrow-l"
-                    aria-label="Previous image"
-                    onClick={e => { e.stopPropagation(); prevImg(); }}
-                  >
+                  <button className="pg-arrow pg-arrow-l" aria-label="Previous image"
+                    onClick={e => { e.stopPropagation(); prevImg(); }}>
                     <IChev dir="left" />
                   </button>
-                  <button
-                    className="pg-arrow pg-arrow-r"
-                    aria-label="Next image"
-                    onClick={e => { e.stopPropagation(); nextImg(); }}
-                  >
+                  <button className="pg-arrow pg-arrow-r" aria-label="Next image"
+                    onClick={e => { e.stopPropagation(); nextImg(); }}>
                     <IChev dir="right" />
                   </button>
                   <div className="pg-dots">
                     {images.map((_, i) => (
-                      <div
-                        key={i}
-                        className={"pg-dot" + (imgIdx === i ? " on" : "")}
-                        onClick={e => { e.stopPropagation(); setImgIdx(i); }}
-                        role="button"
-                        aria-label={`Go to image ${i + 1}`}
+                      <div key={i} className={"pg-dot" + (imgIdx === i ? " on" : "")}
+                        onClick={e => { e.stopPropagation(); goTo(i, i > imgIdx ? "left" : "right"); }}
+                        role="button" aria-label={`Image ${i + 1}`}
                       />
                     ))}
                   </div>
@@ -308,21 +190,15 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
               {p.badge && !hasDiscount && (
                 <div className="pbadge" style={{ top: 14, left: 14 }}>{p.badge}</div>
               )}
-
               <div className="pg-zoom-hint">🔍 Tap to zoom</div>
             </div>
 
-            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="pg-thumbs">
                 {images.map((img, i) => (
-                  <div
-                    key={i}
-                    className={"pg-thumb" + (imgIdx === i ? " on" : "")}
-                    onClick={() => setImgIdx(i)}
-                    role="button"
-                    aria-label={`View image ${i + 1}`}
-                  >
+                  <div key={i} className={"pg-thumb" + (imgIdx === i ? " on" : "")}
+                    onClick={() => goTo(i, i > imgIdx ? "left" : "right")}
+                    role="button" aria-label={`View image ${i + 1}`}>
                     <img src={img} alt="" />
                   </div>
                 ))}
@@ -359,7 +235,7 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
             </div>
 
             {p.desc && (
-              <p style={{ fontSize: ".88rem", color: "rgba(255,255,255,.45)", lineHeight: 1.78, marginBottom: 24 }}>
+              <p style={{ fontSize: ".88rem", color: "rgba(255,255,255,.55)", lineHeight: 1.78, marginBottom: 24 }}>
                 {p.desc}
               </p>
             )}
@@ -367,17 +243,13 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
             {/* Color picker */}
             {variants.length > 1 && (
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.35)", marginBottom: 10 }}>
+                <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", marginBottom: 10 }}>
                   Color — <span style={{ color: "#F2F2F2", textTransform: "none", fontWeight: 600 }}>{variant.color}</span>
                 </div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   {variants.map((v, i) => (
-                    <button
-                      key={i}
-                      onClick={() => switchVariant(i)}
-                      aria-label={`Select color ${v.color}`}
-                      aria-pressed={variantIdx === i}
-                      title={v.color}
+                    <button key={i} onClick={() => switchVariant(i)}
+                      aria-label={`Select color ${v.color}`} aria-pressed={variantIdx === i} title={v.color}
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
                         background: v.colorHex || "#888",
@@ -394,18 +266,14 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
 
             {/* Size picker */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.35)", marginBottom: 10 }}>
+              <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)", marginBottom: 10 }}>
                 {err && !size ? "⚠ Pick a size first" : "Select Size"}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Size selection">
                 {sizes.length > 0 ? sizes.map(s => (
-                  <button
-                    key={s}
-                    className={"sbtn" + (size === s ? " on" : "")}
+                  <button key={s} className={"sbtn" + (size === s ? " on" : "")}
                     onClick={() => { setSize(s); setErr(false); }}
-                    aria-pressed={size === s}
-                    aria-label={`Size ${s}`}
-                  >
+                    aria-pressed={size === s} aria-label={`Size ${s}`}>
                     {s}
                   </button>
                 )) : (
@@ -416,7 +284,7 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
 
             {/* Qty */}
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-              <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.35)" }}>Qty</div>
+              <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.45)" }}>Qty</div>
               <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, overflow: "hidden" }}>
                 <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Decrease quantity"
                   style={{ width: 44, height: 44, background: "transparent", border: "none", color: "#F2F2F2", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -433,22 +301,51 @@ export default function ProductPage({ product: p, onBack, onAdd, onFilterClick }
               </div>
             </div>
 
-            <button className="ybtn" onClick={handleAdd} style={{ fontSize: ".9rem", letterSpacing: ".1em" }}
-              aria-label={`Add ${p.name} to cart`}>
-              ADD TO CART
-            </button>
+            {/* ── Action buttons ── */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+              {/* Buy Now — primary CTA */}
+              <button
+                onClick={handleBuyNow}
+                aria-label={`Buy ${p.name} now`}
+                style={{
+                  flex: 2,
+                  padding: "15px 20px",
+                  background: "#F4C430",
+                  border: "none",
+                  borderRadius: 14,
+                  color: "#000",
+                  fontFamily: "'DM Sans',sans-serif",
+                  fontWeight: 800,
+                  fontSize: ".88rem",
+                  letterSpacing: ".1em",
+                  cursor: "pointer",
+                  transition: "all .2s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#e6b800"}
+                onMouseLeave={e => e.currentTarget.style.background = "#F4C430"}
+              >
+                BUY NOW ⚡
+              </button>
 
-            <button
-              onClick={onBack}
-              aria-label="Back to shop"
-              style={{ marginTop: 18, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.3)", fontSize: ".78rem", fontWeight: 600, letterSpacing: ".06em", display: "flex", alignItems: "center", gap: 6, fontFamily: "'DM Sans',sans-serif", transition: "color .2s", padding: 0 }}
+              {/* Add to Cart — secondary */}
+              <button
+                className="gbtn"
+                onClick={handleAdd}
+                aria-label={`Add ${p.name} to cart`}
+                style={{ flex: 1, fontSize: ".82rem", letterSpacing: ".06em" }}
+              >
+                ADD TO CART
+              </button>
+            </div>
+
+            <button onClick={onBack} aria-label="Back to shop"
+              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.45)", fontSize: ".78rem", fontWeight: 600, letterSpacing: ".06em", display: "flex", alignItems: "center", gap: 6, fontFamily: "'DM Sans',sans-serif", transition: "color .2s", padding: 0 }}
               onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.3)"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.45)"}
             >
               ← Back to shop
             </button>
           </div>
-
         </div>
       </div>
     </div>
