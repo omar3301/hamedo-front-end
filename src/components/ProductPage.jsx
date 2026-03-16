@@ -55,13 +55,13 @@ function ZoomLightbox({ images, startIdx, onClose }) {
   // Button Zoom Logic
   const handleZoomIn = (e) => {
     e.stopPropagation();
-    setScale(s => Math.min(s + 0.6, 4)); // Max zoom level 4
+    setScale(s => Math.min(s + 0.8, 4)); // Max zoom level 4
   };
 
   const handleZoomOut = (e) => {
     e.stopPropagation();
     setScale(s => {
-      const newScale = Math.max(s - 0.6, 1);
+      const newScale = Math.max(s - 0.8, 1);
       if (newScale === 1) setPos({ x: 0, y: 0 }); // Reset position when fully zoomed out
       return newScale;
     });
@@ -173,7 +173,7 @@ function ZoomLightbox({ images, startIdx, onClose }) {
           alt=""
           style={{
             transform:  `scale(${scale}) translate(${pos.x / scale}px,${pos.y / scale}px)`,
-            transition: isDragging ? "none" : "transform .2s ease-out", // Removes lag when dragging
+            transition: isDragging ? "none" : "transform .2s ease-out",
           }}
           draggable={false}
         />
