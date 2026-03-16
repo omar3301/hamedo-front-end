@@ -36,34 +36,84 @@ function ZoomLightbox({ images, startIdx, onClose }) {
   const [idx, setIdx]     = useState(startIdx);
   const [scale, setScale] = useState(1);
   const [pos, setPos]     = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart         = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const touchRef          = useRef({});
   const imgRef            = useRef();
 
-  const prev = () => { setIdx(i => (i - 1 + images.length) % images.length); setScale(1); setPos({ x: 0, y: 0 }); };
-  const next = () => { setIdx(i => (i + 1) % images.length); setScale(1); setPos({ x: 0, y: 0 }); };
+  const resetZoom = () => { setScale(1); setPos({ x: 0, y: 0 }); };
 
-  const swipe = useSwipe(next, prev);
+  const prev = () => { setIdx(i => (i - 1 + images.length) % images.length); resetZoom(); };
+  const next = () => { setIdx(i => (i + 1) % images.length); resetZoom(); };
+
+  // Only allow swiping to change images if not zoomed in
+  const swipe = useSwipe(
+    () => { if (scale === 1) next(); }, 
+    () => { if (scale === 1) prev(); }
+  );
+
+  // Button Zoom Logic
+  const handleZoomIn = (e) => {
+    e.stopPropagation();
+    setScale(s => Math.min(s + 0.6, 4)); // Max zoom level 4
+  };
+
+  const handleZoomOut = (e) => {
+    e.stopPropagation();
+    setScale(s => {
+      const newScale = Math.max(s - 0.6, 1);
+      if (newScale === 1) setPos({ x: 0, y: 0 }); // Reset position when fully zoomed out
+      return newScale;
+    });
+  };
 
   // Double-tap to zoom
   const lastTap = useRef(0);
-  const handleImgTap = () => {
+  const handleImgTap = (e) => {
+    e.stopPropagation();
     const now = Date.now();
     if (now - lastTap.current < 300) {
-      setScale(s => s === 1 ? 2.5 : 1);
-      setPos({ x: 0, y: 0 });
+      if (scale > 1) {
+        resetZoom();
+      } else {
+        setScale(2.5);
+      }
     }
     lastTap.current = now;
   };
 
-  // Pinch zoom
+  // Desktop Mouse Panning
+  const onMouseDown = (e) => {
+    if (scale === 1) return;
+    e.preventDefault();
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY, posX: pos.x, posY: pos.y };
+  };
+
+  const onMouseMove = (e) => {
+    if (!isDragging || scale === 1) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPos({ x: dragStart.current.posX + dx, y: dragStart.current.posY + dy });
+  };
+
+  const onMouseUpOrLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Touch Pinch & Panning
   const onTouchStart = (e) => {
-    swipe.onTouchStart(e);
+    if (scale === 1) swipe.onTouchStart(e);
+
     if (e.touches.length === 2) {
       touchRef.current.pinchDist  = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
       touchRef.current.pinchScale = scale;
+    } else if (scale > 1 && e.touches.length === 1) {
+      setIsDragging(true);
+      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, posX: pos.x, posY: pos.y };
     }
   };
 
@@ -74,23 +124,48 @@ function ZoomLightbox({ images, startIdx, onClose }) {
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
-      setScale(Math.min(4, Math.max(1,
-        touchRef.current.pinchScale * (dist / touchRef.current.pinchDist)
-      )));
+      setScale(Math.min(4, Math.max(1, touchRef.current.pinchScale * (dist / touchRef.current.pinchDist))));
+    } else if (scale > 1 && isDragging && e.touches.length === 1) {
+      const dx = e.touches[0].clientX - dragStart.current.x;
+      const dy = e.touches[0].clientY - dragStart.current.y;
+      setPos({ x: dragStart.current.posX + dx, y: dragStart.current.posY + dy });
     }
+  };
+
+  const onTouchEnd = (e) => {
+    if (scale === 1) swipe.onTouchEnd(e);
+    setIsDragging(false);
   };
 
   return (
     <div className="zoom-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      
+      {/* Zoom In/Out UI Buttons */}
+      <div className="zoom-controls">
+        <button className="zoom-btn" onClick={handleZoomIn} aria-label="Zoom in">
+          <IPlus />
+        </button>
+        <button className="zoom-btn" onClick={handleZoomOut} disabled={scale === 1} aria-label="Zoom out">
+          <IMinus />
+        </button>
+      </div>
+
       <button className="zoom-close" onClick={onClose} aria-label="Close zoom"><IX /></button>
 
       <div
         className="zoom-img-wrap"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
-        onTouchEnd={swipe.onTouchEnd}
+        onTouchEnd={onTouchEnd}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUpOrLeave}
+        onMouseLeave={onMouseUpOrLeave}
         onClick={handleImgTap}
-        style={{ touchAction: scale > 1 ? "none" : "pan-y" }}
+        style={{ 
+          touchAction: scale > 1 ? "none" : "pan-y",
+          cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in"
+        }}
       >
         <img
           ref={imgRef}
@@ -98,7 +173,7 @@ function ZoomLightbox({ images, startIdx, onClose }) {
           alt=""
           style={{
             transform:  `scale(${scale}) translate(${pos.x / scale}px,${pos.y / scale}px)`,
-            transition: scale === 1 ? "transform .3s ease" : "none",
+            transition: isDragging ? "none" : "transform .2s ease-out", // Removes lag when dragging
           }}
           draggable={false}
         />
@@ -106,19 +181,19 @@ function ZoomLightbox({ images, startIdx, onClose }) {
 
       {images.length > 1 && (
         <>
-          <button className="zoom-arrow zoom-arrow-l" onClick={prev} aria-label="Previous image"><IChev dir="left" /></button>
-          <button className="zoom-arrow zoom-arrow-r" onClick={next} aria-label="Next image"><IChev dir="right" /></button>
+          <button className="zoom-arrow zoom-arrow-l" onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="Previous image"><IChev dir="left" /></button>
+          <button className="zoom-arrow zoom-arrow-r" onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Next image"><IChev dir="right" /></button>
           <div className="zoom-dots">
             {images.map((_, i) => (
               <div key={i} className={"zoom-dot" + (i === idx ? " on" : "")}
-                onClick={() => { setIdx(i); setScale(1); setPos({ x: 0, y: 0 }); }}
+                onClick={(e) => { e.stopPropagation(); setIdx(i); resetZoom(); }}
               />
             ))}
           </div>
         </>
       )}
 
-      <div className="zoom-hint">Swipe · Double-tap to zoom · Pinch to zoom</div>
+      <div className="zoom-hint">Swipe · Drag to pan · Double-tap/Pinch to zoom</div>
     </div>
   );
 }
