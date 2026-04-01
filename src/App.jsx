@@ -104,9 +104,9 @@ function ProductDetailPage() {
   const handleFilter   = (f) => navigate(`/shop/${f}`);
   const handleCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
 
-  // Buy Now — add to cart then go straight to checkout
+  // Buy Now — add to cart silently then go straight to checkout (no cart drawer popup)
   const handleBuyNow = (product, size, qty) => {
-    addToCart(product, size, qty);
+    addToCart(product, size, qty, true);
     navigate("/checkout");
     window.scrollTo({ top: 0 });
   };

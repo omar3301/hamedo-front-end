@@ -6,7 +6,7 @@ export function CartProvider({ children }) {
   const [cart,     setCart]     = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
 
-  const addToCart = useCallback((product, size, qty) => {
+  const addToCart = useCallback((product, size, qty, silent = false) => {
     const price = product.discountActive && product.discountPrice
       ? product.discountPrice
       : product.price;
@@ -15,7 +15,7 @@ export function CartProvider({ children }) {
       ...c,
       { ...product, size, qty, price, originalPrice: product.price },
     ]);
-    setCartOpen(true);
+    if (!silent) setCartOpen(true);
   }, []);
 
   const removeFromCart = useCallback((index) => {
