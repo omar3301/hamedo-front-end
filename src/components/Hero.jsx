@@ -1,9 +1,9 @@
 // Hero — Padel focused
 // Three lifestyle shots: boy with bag (action), heart NOX girl (close-up love), duo couple (community)
 const HERO_IMGS = [
-  "https://res.cloudinary.com/dsbnexvia/image/upload/c_scale,w_800/q_auto/f_auto/v1775080622/C0009.00_00_15_29.Still001_qtmoa8.png",
-  "https://res.cloudinary.com/dsbnexvia/image/upload/c_scale,w_800/q_auto/f_auto/v1775080764/IMG_5564_yimru5.jpg",
-  "https://res.cloudinary.com/dsbnexvia/image/upload/c_scale,w_800/q_auto/f_auto/v1775076523/IMG_5625_nxtbnl.jpg",
+  "https://res.cloudinary.com/dsbnexvia/image/upload/q_auto/f_auto/v1775080622/C0009.00_00_15_29.Still001_qtmoa8.png",
+  "https://res.cloudinary.com/dsbnexvia/image/upload/q_auto/f_auto/v1775080764/IMG_5564_yimru5.jpg",
+  "https://res.cloudinary.com/dsbnexvia/image/upload/q_auto/f_auto/v1775076523/IMG_5625_nxtbnl.jpg",
 ];
 
 export default function Hero({ onShop, onFilter }) {
@@ -52,7 +52,7 @@ export default function Hero({ onShop, onFilter }) {
         </div>
 
         {/* ── Desktop: overlapping stacked cards ── */}
-        <div className="hero-photos hero-photos-desktop">
+        <div className="hero-photos-desktop">
           <div className="hcard fu d3" style={{ width: "58%", height: 320, top: 0, right: 0 }}>
             <img
               src={HERO_IMGS[0]}
@@ -89,23 +89,16 @@ export default function Hero({ onShop, onFilter }) {
           </div>
         </div>
 
-        {/* ── Mobile: horizontal scroll strip ── */}
+        {/* ── Mobile: 2-photo grid ── */}
         <div className="hero-photos-mobile">
-          {[
-            { src: HERO_IMGS[0], alt: "Padel player courtside", pos: "center top" },
-            { src: HERO_IMGS[1], alt: "Heart over NOX shirt", pos: "center center" },
-            { src: HERO_IMGS[2], alt: "Padel duo", pos: "center top" },
-          ].map((img, i) => (
-            <div key={i} className="hero-mobile-card fu" style={{ animationDelay: `${0.15 + i * 0.1}s` }}>
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading={i === 0 ? "eager" : "lazy"}
-                fetchpriority={i === 0 ? "high" : undefined}
-                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: img.pos, display: "block" }}
-              />
-            </div>
-          ))}
+          <div className="hero-mobile-card fu d3">
+            <img src={HERO_IMGS[0]} alt="Padel player courtside" loading="eager" fetchpriority="high"
+              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }} />
+          </div>
+          <div className="hero-mobile-card fu d4">
+            <img src={HERO_IMGS[2]} alt="Padel duo" loading="lazy"
+              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }} />
+          </div>
         </div>
 
       </div>
