@@ -1,9 +1,9 @@
 // Hero — Padel focused
 // Three lifestyle shots: boy with bag (action), heart NOX girl (close-up love), duo couple (community)
 const HERO_IMGS = [
-  "https://res.cloudinary.com/dsbnexvia/image/upload/q_auto/f_auto/v1775080622/C0009.00_00_15_29.Still001_qtmoa8.png",
-  "https://res.cloudinary.com/dsbnexvia/image/upload/q_auto/f_auto/v1775080764/IMG_5564_yimru5.jpg",
-  "https://res.cloudinary.com/dsbnexvia/image/upload/q_auto/f_auto/v1775076523/IMG_5625_nxtbnl.jpg",
+  "https://res.cloudinary.com/dsbnexvia/image/upload/c_scale,w_800/q_auto/f_auto/v1775080622/C0009.00_00_15_29.Still001_qtmoa8.png",
+  "https://res.cloudinary.com/dsbnexvia/image/upload/c_scale,w_800/q_auto/f_auto/v1775080764/IMG_5564_yimru5.jpg",
+  "https://res.cloudinary.com/dsbnexvia/image/upload/c_scale,w_800/q_auto/f_auto/v1775076523/IMG_5625_nxtbnl.jpg",
 ];
 
 export default function Hero({ onShop, onFilter }) {
