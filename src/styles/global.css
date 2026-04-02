@@ -430,7 +430,15 @@ body {
   .modal { border-radius: 16px; }
 }
 @media (max-width: 480px) {
-  .pgrid { grid-template-columns: 1fr; }
+  .pgrid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pcard-img { height: 160px; }
+  .pcard-info { padding: 10px; }
+  .pcard-name { font-size: .78rem; }
+  .pcard-sport { font-size: .52rem; }
+  .pcard-sub { font-size: .62rem; }
+  .pcard-price { font-size: .82rem; }
+  .pcard-add { width: 26px; height: 26px; font-size: .82rem; opacity: 1; transform: scale(1); }
+  .pcard-discount-badge { font-size: .75rem; padding: 6px 8px; }
 }
 
 /* ── PRODUCT PAGE ── */
