@@ -94,7 +94,7 @@ function ShopPage() {
 function ProductDetailPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
-  const { findProduct, productsLoaded } = useProducts();
+  const { findProduct, products, productsLoaded } = useProducts();
   const { cart, cartOpen, openCart, closeCart, addToCart, removeFromCart } = useCart();
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [slug]);
@@ -103,6 +103,14 @@ function ProductDetailPage() {
   const goHome         = () => navigate("/shop");
   const handleFilter   = (f) => navigate(`/shop/${f}`);
   const handleCheckout = () => { closeCart(); navigate("/checkout"); window.scrollTo({ top: 0 }); };
+  const handleBack     = (item) => {
+    if (item && (item.slug || item._id)) {
+      navigate(`/product/${item.slug || item._id}`);
+      window.scrollTo({ top: 0 });
+    } else {
+      navigate("/shop");
+    }
+  };
 
   // Buy Now — add to cart silently then go straight to checkout (no cart drawer popup)
   const handleBuyNow = (product, size, qty) => {
@@ -123,7 +131,8 @@ function ProductDetailPage() {
         <Ticker />
         <ProductPage
           product={product}
-          onBack={goHome}
+          allProducts={products}
+          onBack={handleBack}
           onAdd={addToCart}
           onBuyNow={handleBuyNow}
           onFilterClick={handleFilter}

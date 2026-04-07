@@ -35,8 +35,94 @@ function useSwipe(onSwipeLeft, onSwipeRight) {
   return { onTouchStart, onTouchEnd };
 }
 
+// ── Related Products strip ─────────────────────────────────────────────
+function RelatedProducts({ current, allProducts, onProductClick }) {
+  const related = allProducts
+    .filter(p =>
+      p._id !== current._id &&
+      p.active !== false &&
+      (p.category || "").toLowerCase() === (current.category || "").toLowerCase()
+    )
+    .slice(0, 8);
+
+  if (related.length === 0) return null;
+
+  return (
+    <div style={{ background: "#080808", paddingBottom: 80 }}>
+      <div className="container">
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: ".58rem", fontWeight: 800, color: "#F4C430", letterSpacing: ".18em", textTransform: "uppercase", marginBottom: 5 }}>
+              {current.category}
+            </div>
+            <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.3rem,2.5vw,1.9rem)", fontWeight: 800, letterSpacing: "-.02em", margin: 0 }}>
+              You May Also Like <span style={{ color: "#F4C430" }}>→</span>
+            </h2>
+          </div>
+          <button
+            onClick={() => onProductClick(null, current.category)}
+            style={{ background: "none", border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, color: "rgba(255,255,255,.45)", fontSize: ".72rem", fontWeight: 700, letterSpacing: ".08em", padding: "8px 14px", cursor: "pointer", whiteSpace: "nowrap", transition: "all .2s", fontFamily: "'DM Sans',sans-serif" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(244,196,48,.4)"; e.currentTarget.style.color = "#F4C430"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.12)"; e.currentTarget.style.color = "rgba(255,255,255,.45)"; }}
+          >
+            View all
+          </button>
+        </div>
+
+        <div style={{
+          display: "flex", gap: 12, overflowX: "auto", paddingBottom: 12,
+          scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch",
+          msOverflowStyle: "none", scrollbarWidth: "none",
+        }}>
+          {related.map(item => {
+            const hasDiscount  = item.discountActive && item.discountPrice && item.discountPrice < item.price;
+            const displayPrice = hasDiscount ? item.discountPrice : item.price;
+            const discountPct  = hasDiscount ? Math.round((1 - item.discountPrice / item.price) * 100) : 0;
+            const img          = item.variants?.[0]?.images?.[0] || item.images?.[0] || "";
+            return (
+              <div
+                key={item._id}
+                onClick={() => onProductClick(item)}
+                role="button" tabIndex={0}
+                onKeyDown={e => e.key === "Enter" && onProductClick(item)}
+                style={{
+                  flexShrink: 0, width: 155, scrollSnapAlign: "start",
+                  background: "#111", border: "1px solid rgba(255,255,255,.06)",
+                  borderRadius: 14, overflow: "hidden", cursor: "pointer",
+                  transition: "transform .25s, border-color .25s, box-shadow .25s",
+                  position: "relative",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(244,196,48,.3)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
+              >
+                <div style={{ height: 155, background: "#161616", position: "relative", overflow: "hidden" }}>
+                  {img && <img src={img} alt={item.name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 10, display: "block" }} />}
+                  {hasDiscount && (
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "#fff", fontSize: ".62rem", fontWeight: 800, padding: "5px 8px", borderRadius: "0 14px 0 10px" }}>
+                      -{discountPct}%
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: "10px 11px 12px" }}>
+                  <div style={{ fontSize: ".55rem", fontWeight: 800, color: "#F4C430", letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 3 }}>{item.brand}</div>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: ".78rem", fontWeight: 800, lineHeight: 1.25, color: "#F2F2F2", marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.name}</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+                    {hasDiscount && <span style={{ fontSize: ".62rem", color: "rgba(255,255,255,.28)", textDecoration: "line-through", fontWeight: 400 }}>{item.price?.toLocaleString()}</span>}
+                    <span style={{ fontFamily: "'Syne',sans-serif", fontSize: ".88rem", fontWeight: 800, color: hasDiscount ? "#F4C430" : "#F2F2F2" }}>{displayPrice?.toLocaleString()}</span>
+                    <span style={{ fontSize: ".6rem", color: "rgba(255,255,255,.28)", fontWeight: 400 }}>EGP</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Product Page ───────────────────────────────────────────────────────
-export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFilterClick }) {
+export default function ProductPage({ product: p, allProducts = [], onBack, onAdd, onBuyNow, onFilterClick }) {
   const variants = p.variants?.length
     ? p.variants.filter(v => v.active !== false)
     : [{ color: p.color, colorHex: p.colorHex, images: p.images, sizes: p.sizes?.map(s => ({ label: s })) || [] }];
@@ -48,7 +134,6 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
   const [qty,        setQty]        = useState(1);
   const [err,        setErr]        = useState(false);
   const [zoomOpen,   setZoomOpen]   = useState(false);
-  const [sizeGuide,  setSizeGuide]  = useState(false);
 
   const variant = variants[variantIdx];
   const images  = variant?.images || p.images || [];
@@ -302,22 +387,8 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
 
             {/* Size picker */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)" }}>
-                  {err && !size ? "⚠ Pick a size first" : "Select Size"}
-                </div>
-                {sizes.length > 0 && (
-                  <button
-                    onClick={() => setSizeGuide(true)}
-                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,.4)", fontSize: ".68rem", fontWeight: 700, letterSpacing: ".06em", fontFamily: "'DM Sans',sans-serif", padding: 0, transition: "color .2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
-                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.4)"}
-                    aria-label="Open size guide"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Size Guide
-                  </button>
-                )}
+              <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)", marginBottom: 10 }}>
+                {err && !size ? "⚠ Pick a size first" : "Select Size"}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Size selection">
                 {sizes.length > 0 ? sizes.map(s => (
@@ -332,7 +403,7 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
               </div>
             </div>
 
-            {/* ── Size Guide Modal ── */}
+            {/* ── Size Chart Modal ── */}
             {sizeGuide && (
               <div
                 onClick={() => setSizeGuide(false)}
@@ -346,7 +417,7 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
                     <div>
                       <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", color: "#F4C430", textTransform: "uppercase", marginBottom: 4 }}>HamedoSport</div>
-                      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Size Guide</div>
+                      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Size Chart</div>
                     </div>
                     <button onClick={() => setSizeGuide(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.1)", color: "#fff", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
@@ -415,7 +486,6 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
                 </div>
               </div>
             )}
-
             {/* Qty */}
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
               <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.45)" }}>Qty</div>
@@ -482,6 +552,25 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
           </div>
         </div>
       </div>
+
+      {/* ── Related Products ── */}
+      <RelatedProducts
+        current={p}
+        allProducts={allProducts}
+        onProductClick={(item, cat) => {
+          if (item) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            // Navigate to the clicked product — parent handles routing via onFilterClick pattern
+            // We reuse onFilterClick to go back to shop filtered by category,
+            // but if a direct product nav handler exists use it.
+            // Simplest: dispatch a custom event the App can listen to, or call onBack + filter.
+            // Best: expose onProductClick from App — for now trigger onBack then filter.
+            onBack && onBack(item);
+          } else {
+            onFilterClick && onFilterClick((cat || "").toLowerCase());
+          }
+        }}
+      />
     </div>
   );
 }

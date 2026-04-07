@@ -8,7 +8,7 @@ import { IX, ICheck } from "./ui";
 const GOVERNORATES = [
   "Cairo","Alexandria","Giza","Qalyubia","Port Said","Suez",
   "Ismailia","Dakahlia","Sharqia","Gharbia","Kafr El Sheikh",
-  "Monufia","Beheira","Minya","Beni Suef","Fayoum","Asyut",
+  "Menoufiya","Beheira","Minya","Beni Suef","Fayoum","Asyut",
   "Sohag","Qena","Luxor","Aswan","Red Sea","Matrouh",
   "North Sinai","South Sinai","New Valley","Damietta",
 ];

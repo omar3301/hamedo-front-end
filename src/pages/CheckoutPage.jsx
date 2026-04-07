@@ -6,7 +6,7 @@ const API = import.meta.env.VITE_API_URL;
 const GOVERNORATES = [
   "Cairo","Alexandria","Giza","Qalyubia","Port Said","Suez",
   "Ismailia","Dakahlia","Sharqia","Gharbia","Kafr El Sheikh",
-  "Monufia","Beheira","Minya","Beni Suef","Fayoum","Asyut",
+  "Menoufiya","Beheira","Minya","Beni Suef","Fayoum","Asyut",
   "Sohag","Qena","Luxor","Aswan","Red Sea","Matrouh",
   "North Sinai","South Sinai","New Valley","Damietta",
 ];
@@ -75,7 +75,7 @@ export default function CheckoutPage({ items, onBack, onDone }) {
             phone:     "+20" + form.phone.replace(/^0/, ""),
           },
           delivery: delivery === "pickup"
-            ? { address: "Store Pickup — Khub, Shebin El Kom, Menofia", apt: "", city: "Shebin El Kom", governorate: "Monufia" }
+            ? { address: "Store Pickup — Khub, Shebin El Kom, Menofia", apt: "", city: "Shebin El Kom", governorate: "Menoufiya" }
             : { address: form.address, apt: form.apt, city: form.city, governorate: form.governorate },
           items: items.map((i) => ({
             productId: i.id || i._id || i.slug,

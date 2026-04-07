@@ -19,16 +19,16 @@ export default function Hero({ onShop, onFilter }) {
       <div className="hero-glow" />
       <div className="hero-inner">
         <div>
-          <div className="hero-eye fu d1">Monufia · Egypt · Official Padel Gear</div>
+          <div className="hero-eye fu d1">Menoufiya · Egypt · Official Padel Gear</div>
           <h1 className="hero-h1 fu d2">
-            Monufia's<br />
+            Menoufiya's<br />
             <span style={{ color: "#F4C430" }}>Official</span><br />
             Padel Store
           </h1>
           <p className="hero-p fu d3">
             Official gear from BullPadel, NOX &amp; Siux —
             rackets, shoes &amp; circuit kits.
-            Delivered across Monufia.
+            Delivered across Menoufiya.
           </p>
 
           <div className="hero-cats fu d4">
