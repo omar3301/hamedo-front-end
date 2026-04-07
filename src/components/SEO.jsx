@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 const SITE_NAME = "HamedoSport";
 const DEFAULT_IMG = "https://i.ibb.co/cKDd9XNZ/Whats-App-Image-2026-03-09-at-7-40-33-PM.jpg";
-const DEFAULT_DESC = "Official Padel and Football kits in Egypt. BullPadel, NOX, Siux. Cash on Delivery.";
+const DEFAULT_DESC = "Official Padel kits in Egypt. BullPadel, NOX, Siux. Cash on Delivery.";
 
 function setMeta(name, content, prop = false) {
   const attr = prop ? `property="${name}"` : `name="${name}"`;
@@ -17,7 +17,7 @@ function setMeta(name, content, prop = false) {
 
 export default function SEO({ title, description, image }) {
   useEffect(() => {
-    const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — Official Padel & Football Kits`;
+    const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — Official Padel Kits`;
     const desc  = description || DEFAULT_DESC;
     const img   = image || DEFAULT_IMG;
 

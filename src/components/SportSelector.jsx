@@ -64,15 +64,6 @@ export default function SportSelector({ onSelect }) {
           Browse All Products ↓
         </button>
 
-        {/* Trust bar */}
-        <div className="sp-trust">
-          {TRUST.map((t, i) => (
-            <div key={i} className="sp-trust-item">
-              <span className="sp-trust-check">✓</span>
-              {t}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

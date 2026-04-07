@@ -431,7 +431,7 @@ body {
 }
 @media (max-width: 480px) {
   .pgrid { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .pcard-img { height: 160px; }
+  .pcard-img { height: 200px; }
   .pcard-info { padding: 10px; }
   .pcard-name { font-size: .78rem; }
   .pcard-sport { font-size: .52rem; }
