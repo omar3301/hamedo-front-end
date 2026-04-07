@@ -134,6 +134,7 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
   const [qty,        setQty]        = useState(1);
   const [err,        setErr]        = useState(false);
   const [zoomOpen,   setZoomOpen]   = useState(false);
+  const [sizeGuide,  setSizeGuide]  = useState(false); // <-- تمت إضافة هذا السطر للتحكم في المودال
 
   const variant = variants[variantIdx];
   const images  = variant?.images || p.images || [];
@@ -206,6 +207,7 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
     const handlePopState = () => {
       // If the back button is pressed, ensure the zoom is closed.
       setZoomOpen(false);
+      setSizeGuide(false); // نقفل المودال لو رجع ورا
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -387,23 +389,21 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
 
             {/* Size picker */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              {/* تمت إضافة زر فتح الـ Size Guide هنا */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)" }}>
                   {err && !size ? "⚠ Pick a size first" : "Select Size"}
                 </div>
                 {sizes.length > 0 && (
-                  <button
-                    onClick={() => setSizeGuide(true)}
-                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,.4)", fontSize: ".68rem", fontWeight: 700, letterSpacing: ".06em", fontFamily: "'DM Sans',sans-serif", padding: 0, transition: "color .2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
-                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.4)"}
-                    aria-label="Open size chart"
+                  <button 
+                    onClick={() => setSizeGuide(true)} 
+                    style={{ background: "none", border: "none", color: "#F4C430", fontSize: ".65rem", fontWeight: 700, cursor: "pointer", textDecoration: "underline", padding: 0 }}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Size Chart
+                    📏 Size Guide
                   </button>
                 )}
               </div>
+              
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Size selection">
                 {sizes.length > 0 ? sizes.map(s => (
                   <button key={s} className={"sbtn" + (size === s ? " on" : "")}
@@ -416,90 +416,6 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
                 )}
               </div>
             </div>
-
-            {/* ── Size Chart Modal ── */}
-            {sizeGuide && (
-              <div
-                onClick={() => setSizeGuide(false)}
-                style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,.82)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
-              >
-                <div
-                  onClick={e => e.stopPropagation()}
-                  style={{ background: "#111", border: "1px solid rgba(255,255,255,.1)", borderRadius: 20, width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto", padding: "28px 26px" }}
-                >
-                  {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
-                    <div>
-                      <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", color: "#F4C430", textTransform: "uppercase", marginBottom: 4 }}>HamedoSport</div>
-                      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Size Chart</div>
-                    </div>
-                    <button onClick={() => setSizeGuide(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.1)", color: "#fff", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-                  </div>
-
-                  {/* Measurement diagram */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
-                    {[
-                      { label: "CHEST WIDTH", arrow: "↔", desc: "Armpit to armpit (laid flat)", color: "#F4C430" },
-                      { label: "LENGTH", arrow: "↕", desc: "Shoulder to hem", color: "#60A5FA" },
-                    ].map(({ label, arrow, desc, color }) => (
-                      <div key={label} style={{ background: "rgba(255,255,255,.04)", border: `1px solid ${color}22`, borderRadius: 12, padding: "14px 14px", textAlign: "center" }}>
-                        <div style={{ fontSize: "1.8rem", marginBottom: 6, color }}>{arrow}</div>
-                        <div style={{ fontSize: ".65rem", fontWeight: 800, letterSpacing: ".1em", color, marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: ".7rem", color: "rgba(255,255,255,.4)", lineHeight: 1.4 }}>{desc}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Size table */}
-                  <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,.08)", marginBottom: 20 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1.4fr", background: "#F4C430", padding: "10px 16px" }}>
-                      {["SIZE", "CHEST (cm)", "LENGTH (cm)"].map(h => (
-                        <div key={h} style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".1em", color: "#000" }}>{h}</div>
-                      ))}
-                    </div>
-                    {[
-                      ["S",   "50 – 52", "70 – 72"],
-                      ["M",   "53 – 55", "72 – 74"],
-                      ["L",   "56 – 58", "74 – 76"],
-                      ["XL",  "59 – 61", "76 – 78"],
-                      ["XXL", "62 – 64", "78 – 80"],
-                      ["3XL", "65 – 67", "80 – 82"],
-                    ].map(([sz, chest, len], i) => (
-                      <div
-                        key={sz}
-                        style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1.4fr", padding: "11px 16px", background: i % 2 === 0 ? "rgba(255,255,255,.03)" : "transparent", borderTop: "1px solid rgba(255,255,255,.05)",
-                          ...(size === sz ? { background: "rgba(244,196,48,.08)", borderLeft: "3px solid #F4C430" } : {}) }}
-                      >
-                        <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: ".95rem", color: size === sz ? "#F4C430" : "#F2F2F2" }}>{sz}</div>
-                        <div style={{ fontSize: ".85rem", color: "rgba(255,255,255,.7)" }}>{chest} cm</div>
-                        <div style={{ fontSize: ".85rem", color: "rgba(255,255,255,.7)" }}>{len} cm</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Notes */}
-                  <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
-                    <div style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".12em", color: "#F4C430", marginBottom: 10 }}>📋 NOTES</div>
-                    {[
-                      "Chest Width = Armpit to Armpit (laid flat)",
-                      "Slim / Regular Fit (athletic, not too loose)",
-                      "Add 2 cm for Lycra / Dri-Fit fabrics (they stretch)",
-                      "When in doubt, it's better to Size Up!",
-                    ].map((note, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: i < 3 ? 8 : 0, fontSize: ".78rem", color: "rgba(255,255,255,.55)", lineHeight: 1.5 }}>
-                        <span style={{ color: "#F4C430", flexShrink: 0, marginTop: 1 }}>✓</span>
-                        <span>{note}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* CTA */}
-                  <div style={{ background: "rgba(244,196,48,.06)", border: "1px solid rgba(244,196,48,.2)", borderRadius: 10, padding: "12px 16px", textAlign: "center", fontSize: ".8rem", fontWeight: 700, color: "rgba(255,255,255,.55)" }}>
-                    🏆 <span style={{ color: "#F4C430" }}>When in Doubt</span> — It's Usually Better to <span style={{ color: "#F4C430" }}>Size Up!</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Qty */}
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
@@ -519,7 +435,6 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
                 = {totalPrice.toLocaleString()} EGP
               </div>
             </div>
-
 
             {/* ── Action buttons ── */}
             <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
@@ -576,17 +491,96 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
         onProductClick={(item, cat) => {
           if (item) {
             window.scrollTo({ top: 0, behavior: "smooth" });
-            // Navigate to the clicked product — parent handles routing via onFilterClick pattern
-            // We reuse onFilterClick to go back to shop filtered by category,
-            // but if a direct product nav handler exists use it.
-            // Simplest: dispatch a custom event the App can listen to, or call onBack + filter.
-            // Best: expose onProductClick from App — for now trigger onBack then filter.
             onBack && onBack(item);
           } else {
             onFilterClick && onFilterClick((cat || "").toLowerCase());
           }
         }}
       />
+
+      {/* ── Size Chart Modal ── */}
+      {sizeGuide && (
+        <div
+          onClick={() => setSizeGuide(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,.82)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: "#111", border: "1px solid rgba(255,255,255,.1)", borderRadius: 20, width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto", padding: "28px 26px" }}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+              <div>
+                <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", color: "#F4C430", textTransform: "uppercase", marginBottom: 4 }}>HamedoSport</div>
+                <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Size Chart</div>
+              </div>
+              <button onClick={() => setSizeGuide(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.1)", color: "#fff", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            </div>
+
+            {/* Measurement diagram */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+              {[
+                { label: "CHEST WIDTH", arrow: "↔", desc: "Armpit to armpit (laid flat)", color: "#F4C430" },
+                { label: "LENGTH", arrow: "↕", desc: "Shoulder to hem", color: "#60A5FA" },
+              ].map(({ label, arrow, desc, color }) => (
+                <div key={label} style={{ background: "rgba(255,255,255,.04)", border: `1px solid ${color}22`, borderRadius: 12, padding: "14px 14px", textAlign: "center" }}>
+                  <div style={{ fontSize: "1.8rem", marginBottom: 6, color }}>{arrow}</div>
+                  <div style={{ fontSize: ".65rem", fontWeight: 800, letterSpacing: ".1em", color, marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontSize: ".7rem", color: "rgba(255,255,255,.4)", lineHeight: 1.4 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Size table */}
+            <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,.08)", marginBottom: 20 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1.4fr", background: "#F4C430", padding: "10px 16px" }}>
+                {["SIZE", "CHEST (cm)", "LENGTH (cm)"].map(h => (
+                  <div key={h} style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".1em", color: "#000" }}>{h}</div>
+                ))}
+              </div>
+              {[
+                ["S",   "50 – 52", "70 – 72"],
+                ["M",   "53 – 55", "72 – 74"],
+                ["L",   "56 – 58", "74 – 76"],
+                ["XL",  "59 – 61", "76 – 78"],
+                ["XXL", "62 – 64", "78 – 80"],
+                ["3XL", "65 – 67", "80 – 82"],
+              ].map(([sz, chest, len], i) => (
+                <div
+                  key={sz}
+                  style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1.4fr", padding: "11px 16px", background: i % 2 === 0 ? "rgba(255,255,255,.03)" : "transparent", borderTop: "1px solid rgba(255,255,255,.05)",
+                    ...(size === sz ? { background: "rgba(244,196,48,.08)", borderLeft: "3px solid #F4C430" } : {}) }}
+                >
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: ".95rem", color: size === sz ? "#F4C430" : "#F2F2F2" }}>{sz}</div>
+                  <div style={{ fontSize: ".85rem", color: "rgba(255,255,255,.7)" }}>{chest} cm</div>
+                  <div style={{ fontSize: ".85rem", color: "rgba(255,255,255,.7)" }}>{len} cm</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Notes */}
+            <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+              <div style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".12em", color: "#F4C430", marginBottom: 10 }}>📋 NOTES</div>
+              {[
+                "Chest Width = Armpit to Armpit (laid flat)",
+                "Slim / Regular Fit (athletic, not too loose)",
+                "Add 2 cm for Lycra / Dri-Fit fabrics (they stretch)",
+                "When in doubt, it's better to Size Up!",
+              ].map((note, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: i < 3 ? 8 : 0, fontSize: ".78rem", color: "rgba(255,255,255,.55)", lineHeight: 1.5 }}>
+                  <span style={{ color: "#F4C430", flexShrink: 0, marginTop: 1 }}>✓</span>
+                  <span>{note}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div style={{ background: "rgba(244,196,48,.06)", border: "1px solid rgba(244,196,48,.2)", borderRadius: 10, padding: "12px 16px", textAlign: "center", fontSize: ".8rem", fontWeight: 700, color: "rgba(255,255,255,.55)" }}>
+              🏆 <span style={{ color: "#F4C430" }}>When in Doubt</span> — It's Usually Better to <span style={{ color: "#F4C430" }}>Size Up!</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
