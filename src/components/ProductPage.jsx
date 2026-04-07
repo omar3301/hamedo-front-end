@@ -387,8 +387,22 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
 
             {/* Size picker */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)", marginBottom: 10 }}>
-                {err && !size ? "⚠ Pick a size first" : "Select Size"}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)" }}>
+                  {err && !size ? "⚠ Pick a size first" : "Select Size"}
+                </div>
+                {sizes.length > 0 && (
+                  <button
+                    onClick={() => setSizeGuide(true)}
+                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,.4)", fontSize: ".68rem", fontWeight: 700, letterSpacing: ".06em", fontFamily: "'DM Sans',sans-serif", padding: 0, transition: "color .2s" }}
+                    onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
+                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.4)"}
+                    aria-label="Open size chart"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Size Chart
+                  </button>
+                )}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Size selection">
                 {sizes.length > 0 ? sizes.map(s => (
@@ -486,6 +500,7 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
                 </div>
               </div>
             )}
+
             {/* Qty */}
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
               <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.45)" }}>Qty</div>
@@ -504,6 +519,7 @@ export default function ProductPage({ product: p, allProducts = [], onBack, onAd
                 = {totalPrice.toLocaleString()} EGP
               </div>
             </div>
+
 
             {/* ── Action buttons ── */}
             <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
