@@ -35,8 +35,94 @@ function useSwipe(onSwipeLeft, onSwipeRight) {
   return { onTouchStart, onTouchEnd };
 }
 
+// ── Related Products strip ─────────────────────────────────────────────
+function RelatedProducts({ current, allProducts, onProductClick }) {
+  const related = allProducts
+    .filter(p =>
+      p._id !== current._id &&
+      p.active !== false &&
+      (p.category || "").toLowerCase() === (current.category || "").toLowerCase()
+    )
+    .slice(0, 8);
+
+  if (related.length === 0) return null;
+
+  return (
+    <div style={{ background: "#080808", paddingBottom: 80 }}>
+      <div className="container">
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: ".58rem", fontWeight: 800, color: "#F4C430", letterSpacing: ".18em", textTransform: "uppercase", marginBottom: 5 }}>
+              {current.category}
+            </div>
+            <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.3rem,2.5vw,1.9rem)", fontWeight: 800, letterSpacing: "-.02em", margin: 0 }}>
+              You May Also Like <span style={{ color: "#F4C430" }}>→</span>
+            </h2>
+          </div>
+          <button
+            onClick={() => onProductClick(null, current.category)}
+            style={{ background: "none", border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, color: "rgba(255,255,255,.45)", fontSize: ".72rem", fontWeight: 700, letterSpacing: ".08em", padding: "8px 14px", cursor: "pointer", whiteSpace: "nowrap", transition: "all .2s", fontFamily: "'DM Sans',sans-serif" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(244,196,48,.4)"; e.currentTarget.style.color = "#F4C430"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.12)"; e.currentTarget.style.color = "rgba(255,255,255,.45)"; }}
+          >
+            View all
+          </button>
+        </div>
+
+        <div style={{
+          display: "flex", gap: 12, overflowX: "auto", paddingBottom: 12,
+          scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch",
+          msOverflowStyle: "none", scrollbarWidth: "none",
+        }}>
+          {related.map(item => {
+            const hasDiscount  = item.discountActive && item.discountPrice && item.discountPrice < item.price;
+            const displayPrice = hasDiscount ? item.discountPrice : item.price;
+            const discountPct  = hasDiscount ? Math.round((1 - item.discountPrice / item.price) * 100) : 0;
+            const img          = item.variants?.[0]?.images?.[0] || item.images?.[0] || "";
+            return (
+              <div
+                key={item._id}
+                onClick={() => onProductClick(item)}
+                role="button" tabIndex={0}
+                onKeyDown={e => e.key === "Enter" && onProductClick(item)}
+                style={{
+                  flexShrink: 0, width: 155, scrollSnapAlign: "start",
+                  background: "#111", border: "1px solid rgba(255,255,255,.06)",
+                  borderRadius: 14, overflow: "hidden", cursor: "pointer",
+                  transition: "transform .25s, border-color .25s, box-shadow .25s",
+                  position: "relative",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(244,196,48,.3)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = "rgba(255,255,255,.06)"; e.currentTarget.style.boxShadow = "none"; }}
+              >
+                <div style={{ height: 155, background: "#161616", position: "relative", overflow: "hidden" }}>
+                  {img && <img src={img} alt={item.name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 10, display: "block" }} />}
+                  {hasDiscount && (
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "#fff", fontSize: ".62rem", fontWeight: 800, padding: "5px 8px", borderRadius: "0 14px 0 10px" }}>
+                      -{discountPct}%
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: "10px 11px 12px" }}>
+                  <div style={{ fontSize: ".55rem", fontWeight: 800, color: "#F4C430", letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 3 }}>{item.brand}</div>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: ".78rem", fontWeight: 800, lineHeight: 1.25, color: "#F2F2F2", marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.name}</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+                    {hasDiscount && <span style={{ fontSize: ".62rem", color: "rgba(255,255,255,.28)", textDecoration: "line-through", fontWeight: 400 }}>{item.price?.toLocaleString()}</span>}
+                    <span style={{ fontFamily: "'Syne',sans-serif", fontSize: ".88rem", fontWeight: 800, color: hasDiscount ? "#F4C430" : "#F2F2F2" }}>{displayPrice?.toLocaleString()}</span>
+                    <span style={{ fontSize: ".6rem", color: "rgba(255,255,255,.28)", fontWeight: 400 }}>EGP</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Product Page ───────────────────────────────────────────────────────
-export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFilterClick }) {
+export default function ProductPage({ product: p, allProducts = [], onBack, onAdd, onBuyNow, onFilterClick }) {
   const variants = p.variants?.length
     ? p.variants.filter(v => v.active !== false)
     : [{ color: p.color, colorHex: p.colorHex, images: p.images, sizes: p.sizes?.map(s => ({ label: s })) || [] }];
@@ -300,8 +386,9 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
               </div>
             )}
 
-            {/* Size picker */}
+            {/* ── Size picker ── */}
             <div style={{ marginBottom: 24 }}>
+              {/* Row: label + Size Guide pill button */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <div style={{ fontSize: ".68rem", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: err && !size ? "#f87171" : "rgba(255,255,255,.45)" }}>
                   {err && !size ? "⚠ Pick a size first" : "Select Size"}
@@ -309,16 +396,33 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
                 {sizes.length > 0 && (
                   <button
                     onClick={() => setSizeGuide(true)}
-                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,.4)", fontSize: ".68rem", fontWeight: 700, letterSpacing: ".06em", fontFamily: "'DM Sans',sans-serif", padding: 0, transition: "color .2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#F4C430"}
-                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.4)"}
                     aria-label="Open size guide"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      background: "rgba(244,196,48,.12)",
+                      border: "1px solid rgba(244,196,48,.35)",
+                      borderRadius: 100,
+                      color: "#F4C430",
+                      fontSize: ".7rem", fontWeight: 800, letterSpacing: ".07em",
+                      fontFamily: "'DM Sans',sans-serif",
+                      padding: "6px 12px",
+                      cursor: "pointer",
+                      transition: "all .2s",
+                      whiteSpace: "nowrap",
+                      WebkitTapHighlightColor: "transparent",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,196,48,.22)"; e.currentTarget.style.borderColor = "#F4C430"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(244,196,48,.12)"; e.currentTarget.style.borderColor = "rgba(244,196,48,.35)"; }}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Size Guide
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}>
+                      <path d="M21 3H3v4l9 9 9-9V3z"/><line x1="3" y1="8" x2="21" y2="8"/>
+                    </svg>
+                    SIZE GUIDE
                   </button>
                 )}
               </div>
+
+              {/* Size buttons */}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Size selection">
                 {sizes.length > 0 ? sizes.map(s => (
                   <button key={s} className={"sbtn" + (size === s ? " on" : "")}
@@ -332,85 +436,130 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
               </div>
             </div>
 
-            {/* ── Size Guide Modal ── */}
+            {/* ── Size Guide Modal (bottom-sheet on mobile, centered on desktop) ── */}
             {sizeGuide && (
               <div
                 onClick={() => setSizeGuide(false)}
-                style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,.82)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+                style={{
+                  position: "fixed", inset: 0, zIndex: 9999,
+                  background: "rgba(0,0,0,.75)",
+                  backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                  display: "flex", alignItems: "flex-end", justifyContent: "center",
+                  padding: 0,
+                  // On wider screens center it
+                }}
               >
                 <div
                   onClick={e => e.stopPropagation()}
-                  style={{ background: "#111", border: "1px solid rgba(255,255,255,.1)", borderRadius: 20, width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto", padding: "28px 26px" }}
+                  style={{
+                    background: "#111",
+                    border: "1px solid rgba(255,255,255,.1)",
+                    // Bottom-sheet: full-width on mobile, max 500px centered on desktop
+                    borderRadius: "24px 24px 0 0",
+                    width: "100%", maxWidth: 500,
+                    maxHeight: "92dvh",
+                    overflowY: "auto",
+                    padding: "0 0 env(safe-area-inset-bottom,0)",
+                    WebkitOverflowScrolling: "touch",
+                    // Slide-up feel
+                    animation: "sgSlideUp .3s cubic-bezier(.32,1.1,.4,1) both",
+                  }}
                 >
-                  {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
-                    <div>
-                      <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", color: "#F4C430", textTransform: "uppercase", marginBottom: 4 }}>HamedoSport</div>
-                      <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Size Guide</div>
-                    </div>
-                    <button onClick={() => setSizeGuide(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.1)", color: "#fff", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                  <style>{`
+                    @keyframes sgSlideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                    .sg-row:nth-child(even) { background: rgba(255,255,255,.03); }
+                    .sg-row.active { background: rgba(244,196,48,.09) !important; border-left: 3px solid #F4C430; }
+                  `}</style>
+
+                  {/* Drag handle */}
+                  <div style={{ display: "flex", justifyContent: "center", padding: "14px 0 4px" }}>
+                    <div style={{ width: 40, height: 4, borderRadius: 99, background: "rgba(255,255,255,.18)" }} />
                   </div>
 
-                  {/* Measurement diagram */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
-                    {[
-                      { label: "CHEST WIDTH", arrow: "↔", desc: "Armpit to armpit (laid flat)", color: "#F4C430" },
-                      { label: "LENGTH", arrow: "↕", desc: "Shoulder to hem", color: "#60A5FA" },
-                    ].map(({ label, arrow, desc, color }) => (
-                      <div key={label} style={{ background: "rgba(255,255,255,.04)", border: `1px solid ${color}22`, borderRadius: 12, padding: "14px 14px", textAlign: "center" }}>
-                        <div style={{ fontSize: "1.8rem", marginBottom: 6, color }}>{arrow}</div>
-                        <div style={{ fontSize: ".65rem", fontWeight: 800, letterSpacing: ".1em", color, marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: ".7rem", color: "rgba(255,255,255,.4)", lineHeight: 1.4 }}>{desc}</div>
+                  <div style={{ padding: "10px 22px 28px" }}>
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                      <div>
+                        <div style={{ fontSize: ".58rem", fontWeight: 800, letterSpacing: ".18em", color: "#F4C430", textTransform: "uppercase", marginBottom: 3 }}>HamedoSport</div>
+                        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Size Guide</div>
                       </div>
-                    ))}
-                  </div>
+                      <button
+                        onClick={() => setSizeGuide(false)}
+                        aria-label="Close size guide"
+                        style={{
+                          width: 42, height: 42, borderRadius: "50%",
+                          background: "rgba(255,255,255,.08)",
+                          border: "1px solid rgba(255,255,255,.12)",
+                          color: "#fff", cursor: "pointer", fontSize: "1.1rem",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0,
+                          WebkitTapHighlightColor: "transparent",
+                        }}
+                      >✕</button>
+                    </div>
 
-                  {/* Size table */}
-                  <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,.08)", marginBottom: 20 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1.4fr", background: "#F4C430", padding: "10px 16px" }}>
-                      {["SIZE", "CHEST (cm)", "LENGTH (cm)"].map(h => (
-                        <div key={h} style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".1em", color: "#000" }}>{h}</div>
+                    {/* Measurement cards */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                      {[
+                        { label: "CHEST WIDTH", arrow: "↔", desc: "Armpit to armpit (laid flat)", color: "#F4C430" },
+                        { label: "LENGTH",       arrow: "↕", desc: "Shoulder to hem",             color: "#60A5FA" },
+                      ].map(({ label, arrow, desc, color }) => (
+                        <div key={label} style={{ background: "rgba(255,255,255,.04)", border: `1px solid ${color}30`, borderRadius: 14, padding: "16px 12px", textAlign: "center" }}>
+                          <div style={{ fontSize: "2rem", marginBottom: 6, color }}>{arrow}</div>
+                          <div style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".1em", color, marginBottom: 4 }}>{label}</div>
+                          <div style={{ fontSize: ".72rem", color: "rgba(255,255,255,.4)", lineHeight: 1.4 }}>{desc}</div>
+                        </div>
                       ))}
                     </div>
-                    {[
-                      ["S",   "50 – 52", "70 – 72"],
-                      ["M",   "53 – 55", "72 – 74"],
-                      ["L",   "56 – 58", "74 – 76"],
-                      ["XL",  "59 – 61", "76 – 78"],
-                      ["XXL", "62 – 64", "78 – 80"],
-                      ["3XL", "65 – 67", "80 – 82"],
-                    ].map(([sz, chest, len], i) => (
-                      <div
-                        key={sz}
-                        style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1.4fr", padding: "11px 16px", background: i % 2 === 0 ? "rgba(255,255,255,.03)" : "transparent", borderTop: "1px solid rgba(255,255,255,.05)",
-                          ...(size === sz ? { background: "rgba(244,196,48,.08)", borderLeft: "3px solid #F4C430" } : {}) }}
-                      >
-                        <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: ".95rem", color: size === sz ? "#F4C430" : "#F2F2F2" }}>{sz}</div>
-                        <div style={{ fontSize: ".85rem", color: "rgba(255,255,255,.7)" }}>{chest} cm</div>
-                        <div style={{ fontSize: ".85rem", color: "rgba(255,255,255,.7)" }}>{len} cm</div>
-                      </div>
-                    ))}
-                  </div>
 
-                  {/* Notes */}
-                  <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
-                    <div style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".12em", color: "#F4C430", marginBottom: 10 }}>📋 NOTES</div>
-                    {[
-                      "Chest Width = Armpit to Armpit (laid flat)",
-                      "Slim / Regular Fit (athletic, not too loose)",
-                      "Add 2 cm for Lycra / Dri-Fit fabrics (they stretch)",
-                      "When in doubt, it's better to Size Up!",
-                    ].map((note, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: i < 3 ? 8 : 0, fontSize: ".78rem", color: "rgba(255,255,255,.55)", lineHeight: 1.5 }}>
-                        <span style={{ color: "#F4C430", flexShrink: 0, marginTop: 1 }}>✓</span>
-                        <span>{note}</span>
+                    {/* Size table */}
+                    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,.08)", marginBottom: 18 }}>
+                      {/* Header row */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1.5fr", background: "#F4C430", padding: "11px 16px" }}>
+                        {["SIZE", "CHEST (cm)", "LENGTH (cm)"].map(h => (
+                          <div key={h} style={{ fontSize: ".62rem", fontWeight: 800, letterSpacing: ".08em", color: "#000" }}>{h}</div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                      {[
+                        ["S",   "50 – 52", "70 – 72"],
+                        ["M",   "53 – 55", "72 – 74"],
+                        ["L",   "56 – 58", "74 – 76"],
+                        ["XL",  "59 – 61", "76 – 78"],
+                        ["XXL", "62 – 64", "78 – 80"],
+                        ["3XL", "65 – 67", "80 – 82"],
+                      ].map(([sz, chest, len]) => (
+                        <div
+                          key={sz}
+                          className={`sg-row${size === sz ? " active" : ""}`}
+                          style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1.5fr", padding: "13px 16px", borderTop: "1px solid rgba(255,255,255,.05)" }}
+                        >
+                          <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: "1rem", color: size === sz ? "#F4C430" : "#F2F2F2" }}>{sz}</div>
+                          <div style={{ fontSize: ".88rem", color: "rgba(255,255,255,.7)" }}>{chest} cm</div>
+                          <div style={{ fontSize: ".88rem", color: "rgba(255,255,255,.7)" }}>{len} cm</div>
+                        </div>
+                      ))}
+                    </div>
 
-                  {/* CTA */}
-                  <div style={{ background: "rgba(244,196,48,.06)", border: "1px solid rgba(244,196,48,.2)", borderRadius: 10, padding: "12px 16px", textAlign: "center", fontSize: ".8rem", fontWeight: 700, color: "rgba(255,255,255,.55)" }}>
-                    🏆 <span style={{ color: "#F4C430" }}>When in Doubt</span> — It's Usually Better to <span style={{ color: "#F4C430" }}>Size Up!</span>
+                    {/* Notes */}
+                    <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 14, padding: "14px 16px", marginBottom: 14 }}>
+                      <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".12em", color: "#F4C430", marginBottom: 10 }}>📋 NOTES</div>
+                      {[
+                        "Chest Width = Armpit to Armpit (laid flat)",
+                        "Slim / Regular Fit — athletic, not too loose",
+                        "Add 2 cm for Lycra / Dri-Fit fabrics (they stretch)",
+                        "When in doubt, it's better to Size Up!",
+                      ].map((note, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: i < 3 ? 9 : 0, fontSize: ".8rem", color: "rgba(255,255,255,.55)", lineHeight: 1.5 }}>
+                          <span style={{ color: "#F4C430", flexShrink: 0, marginTop: 1 }}>✓</span>
+                          <span>{note}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CTA banner */}
+                    <div style={{ background: "rgba(244,196,48,.07)", border: "1px solid rgba(244,196,48,.22)", borderRadius: 12, padding: "13px 16px", textAlign: "center", fontSize: ".82rem", fontWeight: 700, color: "rgba(255,255,255,.55)" }}>
+                      🏆 <span style={{ color: "#F4C430" }}>When in Doubt</span> — Always <span style={{ color: "#F4C430" }}>Size Up!</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -482,6 +631,25 @@ export default function ProductPage({ product: p, onBack, onAdd, onBuyNow, onFil
           </div>
         </div>
       </div>
+
+      {/* ── Related Products ── */}
+      <RelatedProducts
+        current={p}
+        allProducts={allProducts}
+        onProductClick={(item, cat) => {
+          if (item) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            // Navigate to the clicked product — parent handles routing via onFilterClick pattern
+            // We reuse onFilterClick to go back to shop filtered by category,
+            // but if a direct product nav handler exists use it.
+            // Simplest: dispatch a custom event the App can listen to, or call onBack + filter.
+            // Best: expose onProductClick from App — for now trigger onBack then filter.
+            onBack && onBack(item);
+          } else {
+            onFilterClick && onFilterClick((cat || "").toLowerCase());
+          }
+        }}
+      />
     </div>
   );
 }
