@@ -27,12 +27,12 @@ export default function Hero({ onShop, onFilter }) {
           </h1>
           <p className="hero-p fu d3">
             Official gear from BullPadel, NOX &amp; Siux —
-            rackets, shoes &amp; circuit kits.
+            rackets, socks &amp; circuit kits.
             Delivered across Menoufiya.
           </p>
 
           <div className="hero-cats fu d4">
-            {["Rackets", "Shoes", "Accessories", "Clothes"].map(cat => (
+            {["Rackets", "Socks", "Accessories", "Clothes"].map(cat => (
               <button key={cat} className="hero-cat-btn"
                 onClick={() => handleCat(cat)}
                 aria-label={`Browse ${cat}`}>

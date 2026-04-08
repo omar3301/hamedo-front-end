@@ -4,10 +4,11 @@
 import { Logo } from "./ui";
 
 const CATEGORIES = [
-  { id: "rackets",     label: "Rackets",     icon: "🏓", desc: "BullPadel · NOX · Head" },
-  { id: "shoes",       label: "Shoes",       icon: "👟", desc: "Court-specific grip" },
-  { id: "accessories", label: "Accessories", icon: "🎒", desc: "Bags · Balls · Grips" },
   { id: "clothes",     label: "Clothes",     icon: "👕", desc: "Official circuit kits" },
+  { id: "accessories", label: "Accessories", icon: "🎒", desc: "Bags · Balls · Grips" },
+  { id: "socks",       label: "Socks",       icon: "🧦", desc: "Moisture-wicking" },
+  { id: "rackets",     label: "Rackets",     icon: "🥎", desc: "BullPadel · NOX · Head" },
+  
 ];
 
 const TRUST = ["100% Original", "14-Day Returns", "6-Month Warranty", "Free Ship 1000+ EGP"];

@@ -4,7 +4,7 @@ import { Logo, ICart } from "./ui";
 const CATS = [
   { id: "all",         label: "All" },
   { id: "rackets",     label: "Rackets" },
-  { id: "shoes",       label: "Shoes" },
+  { id: "socks",       label: "Socks" },
   { id: "accessories", label: "Accessories" },
   { id: "clothes",     label: "Clothes" },
 ];

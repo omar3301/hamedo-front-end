@@ -145,7 +145,7 @@ export default function StoreInfo() {
         {[
           { icon:"★", title:"Genuine Gear Only",    desc:"Every product ships direct from official brand distributors in Spain and Europe." },
           { icon:"↩", title:"Change Your Mind?",    desc:"Return or swap anything within 14 days — no awkward questions." },
-          { icon:"⬡", title:"6-Month Warranty",     desc:"Every racket and pair of shoes carries full manufacturer warranty." },
+          { icon:"⬡", title:"6-Month Warranty",     desc:"Every racket and pair of socks carries full manufacturer warranty." },
           { icon:"◉", title:"Played & Tested",      desc:"Our picks aren't just catalogue items — we play with them every week." },
         ].map((t, i) => (
           <div key={i} className="si-trust-card">
